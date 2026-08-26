@@ -89,7 +89,7 @@ const SEED_WORKOUTS_LUARA = [
   ]},
   { name: "Dia 4 — Superior B", exercises: [
     { name: "Supino Inclinado 30°", category: "peito", sets: 3, repsMin: 8, repsMax: 10, rir: "1 a 2", load: "8kg", rest: "90 seg", refNote: "Ênfase em peito superior; banco dá suporte total às costas" },
-    { name: "Remada Unilateral Apoiada", category: "costas", sets: 3, repsMin: 10, repsMax: 12, rir: "1 a 2", load: "10g", rest: "90 seg", refNote: "O apoio do tronco no banco tira toda a carga da lombar" },
+    { name: "Remada Unilateral Apoiada", category: "costas", sets: 3, repsMin: 10, repsMax: 12, rir: "1 a 2", load: "10kg", rest: "90 seg", refNote: "O apoio do tronco no banco tira toda a carga da lombar" },
     { name: "Elevação Lateral", category: "ombro", sets: 3, repsMin: 12, repsMax: 15, rir: "1", load: "4kg", rest: "60 seg", refNote: "Controle a descida, sem usar embalo" },
     { name: "Barra Fixa Assistida", category: "costas", sets: 3, repsMin: 10, repsMax: 12, rir: "1", load: "", rest: "90 seg", refNote: "Ajuste a assistência para manter a faixa de reps" },
     { name: "Rosca Alternada", category: "biceps", sets: 3, repsMin: 10, repsMax: 12, rir: "1", load: "5kg", rest: "Sem pausa", refNote: "Super-série com Tríceps Corda", supersetGroup: "l-d4-5", supersetLabel: "Bi-set" },
