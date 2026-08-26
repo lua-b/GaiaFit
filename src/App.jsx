@@ -107,7 +107,7 @@ const SEED_WORKOUTS_LUARA = [
   { name: "Dia 6 — Pump + Core (opcional)", exercises: [
     { name: "Elevação Pélvica", category: "gluteo", sets: 3, repsMin: 12, repsMax: 15, rir: "2", load: "Zero", rest: "60 seg", refNote: "Volume extra de glúteo — não é dia de força" },
     { name: "Elevação Lateral", category: "ombro", sets: 3, repsMin: 15, repsMax: 15, rir: "2", load: "3kg", rest: "45 seg", refNote: "Foco em bombear o ombro, sem buscar carga alta" },
-    { name: "Abdutora + Adutora", category: "gluteo", sets: 3, repsMin: 15, repsMax: 15, rir: "1 a 2", load: "38,kg / 34,5kg", rest: "45 seg", refNote: "Circuito leve para a região de maior interesse estético" },
+    { name: "Abdutora + Adutora", category: "gluteo", sets: 3, repsMin: 15, repsMax: 15, rir: "1 a 2", load: "38kg / 34,5kg", rest: "45 seg", refNote: "Circuito leve para a região de maior interesse estético" },
     { name: "Abd Bola + Dead bug", category: "abdomen", sets: 3, repsMin: 12, repsMax: 15, rir: "", load: "Zero", rest: "Sem pausa", refNote: "Repete o Big 3 de McGill — reforço, não substitui o Dia 3" },
     { name: "Escada", category: "cardio", sets: 1, repsMin: 15, repsMax: 20, rir: "", load: "5-6", rest: "—", refNote: "Duração em minutos. Recuperação ativa" },
   ]},
