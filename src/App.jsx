@@ -222,6 +222,24 @@ function buildSeedSessions(seedList, profileId, history) {
   });
 }
 
+// Sobe sempre que SEED_WORKOUTS_LUARA/GUILHERME ou *_SESSION_HISTORY mudarem de verdade. Aparelhos
+// que já tinham sido seedados (perfil já existe) recebem os treinos/títulos atualizados e as sessões
+// históricas que ainda não têm, sem nunca apagar sessões reais já registradas pela pessoa.
+const SEED_VERSION = 1;
+function migrateDefaultProfileSeed(id, seedList, history) {
+  const verKey = `gaiafit:seedVersion:${id}`;
+  if ((sGet(verKey) || 0) >= SEED_VERSION) return;
+
+  sSet(`gaiafit:workouts:${id}`, buildWorkouts(seedList, id));
+
+  const existing = sGet(`gaiafit:sessions:${id}`) || [];
+  const existingIds = new Set(existing.map((s) => s.id));
+  const missing = buildSeedSessions(seedList, id, history).filter((s) => !existingIds.has(s.id));
+  if (missing.length > 0) sSet(`gaiafit:sessions:${id}`, [...existing, ...missing]);
+
+  sSet(verKey, SEED_VERSION);
+}
+
 /* ---------------------------------- small UI bits ---------------------------------- */
 function PlateIcon({ category, size = 44, fontSize = 13 }) {
   const c = catInfo(category);
@@ -918,6 +936,8 @@ export default function App() {
       const okS1 = sSet(`gaiafit:sessions:${LUARA_ID}`, buildSeedSessions(SEED_WORKOUTS_LUARA, LUARA_ID, LUARA_SESSION_HISTORY));
       const okW2 = sSet(`gaiafit:workouts:${GUILHERME_ID}`, buildWorkouts(SEED_WORKOUTS_GUILHERME, GUILHERME_ID));
       const okS2 = sSet(`gaiafit:sessions:${GUILHERME_ID}`, buildSeedSessions(SEED_WORKOUTS_GUILHERME, GUILHERME_ID, GUILHERME_SESSION_HISTORY));
+      sSet(`gaiafit:seedVersion:${LUARA_ID}`, SEED_VERSION);
+      sSet(`gaiafit:seedVersion:${GUILHERME_ID}`, SEED_VERSION);
       ok = okP && okW1 && okS1 && okW2 && okS2;
     } else {
       profilesArr = p;
@@ -926,10 +946,15 @@ export default function App() {
         if (!gWorkouts) {
           sSet(`gaiafit:workouts:${GUILHERME_ID}`, buildWorkouts(SEED_WORKOUTS_GUILHERME, GUILHERME_ID));
           sSet(`gaiafit:sessions:${GUILHERME_ID}`, buildSeedSessions(SEED_WORKOUTS_GUILHERME, GUILHERME_ID, GUILHERME_SESSION_HISTORY));
+          sSet(`gaiafit:seedVersion:${GUILHERME_ID}`, SEED_VERSION);
         }
         profilesArr = [...profilesArr, { id: GUILHERME_ID, name: "Guilherme" }];
         sSet("gaiafit:profiles", profilesArr);
       }
+      // aparelho que já tinha perfil salvo antes de uma atualização de treinos/histórico: atualiza
+      // os treinos padrão e completa sessões históricas que faltam, preservando sessões reais
+      migrateDefaultProfileSeed(LUARA_ID, SEED_WORKOUTS_LUARA, LUARA_SESSION_HISTORY);
+      migrateDefaultProfileSeed(GUILHERME_ID, SEED_WORKOUTS_GUILHERME, GUILHERME_SESSION_HISTORY);
     }
 
     setProfiles(profilesArr);
