@@ -867,7 +867,7 @@ function AppHeader({ right }) {
     <>
       <div className="gf-topbar px-4 pt-3 pb-1.5 flex items-start justify-between" style={{ minHeight: 48, overflow: "visible" }}>
         <div className="flex items-start gap-1.5" style={{ position: "relative" }}>
-          <div style={{ marginBottom: -135, position: "relative", zIndex: 5 }}>
+          <div style={{ marginBottom: -135, position: "relative", zIndex: 5, pointerEvents: "none" }}>
             <CatMascot height={230} />
           </div>
           <span className="gf-display gf-wordmark text-3xl leading-none" style={{ letterSpacing: "0.01em", paddingTop: 59 }}>GaiaFit</span>
