@@ -6,17 +6,35 @@ import {
 } from "lucide-react";
 
 /* ---------------------------------- tokens ---------------------------------- */
+// Ondas decorativas em SVG (data URI), usadas como textura de fundo — prateadas sobre o roxo
+// do cabeçalho, e uma versão bem sutil em roxo sobre o cinza de fundo das telas de treino.
+// Cada <path> percorre exatamente uma largura de "período" (0 a W), então o tile repete sem
+// costura visível quando background-size bate com o viewBox.
+const WAVE_TOPBAR = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='140' height='64' viewBox='0 0 140 64'>` +
+  `<path d='M0 16 Q35 4 70 16 T140 16' stroke='rgba(255,255,255,0.22)' stroke-width='2' fill='none'/>` +
+  `<path d='M0 36 Q35 24 70 36 T140 36' stroke='rgba(214,222,255,0.14)' stroke-width='2' fill='none'/>` +
+  `<path d='M0 54 Q35 44 70 54 T140 54' stroke='rgba(255,255,255,0.30)' stroke-width='1.5' fill='none'/>` +
+  `</svg>`
+)}`;
+const WAVE_BG = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='170' height='96' viewBox='0 0 170 96'>` +
+  `<path d='M0 22 Q42.5 6 85 22 T170 22' stroke='rgba(108,79,209,0.07)' stroke-width='2' fill='none'/>` +
+  `<path d='M0 60 Q42.5 44 85 60 T170 60' stroke='rgba(108,79,209,0.05)' stroke-width='2' fill='none'/>` +
+  `</svg>`
+)}`;
 const STYLE = `
 .gf-root{
   --bg:#E6E5EA; --surface:#FFFFFF; --surface-2:#F1EFF9; --line:#E3E1EE;
   --ink:#211F2E; --ink-dim:#6E6B80; --purple:#6C4FD1; --purple-deep:#4B2FAE; --blue:#3E63D9;
-  background:var(--bg); color:var(--ink); min-height:100%;
+  background-color:var(--bg); background-image:url("${WAVE_BG}"); background-repeat:repeat; background-size:170px 96px;
+  color:var(--ink); min-height:100%;
   font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
 }
 .gf-display{ font-family:'Sora',ui-sans-serif,system-ui,-apple-system,sans-serif; font-weight:700; }
 .gf-mono{ font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace; }
 .gf-shell{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
-.gf-topbar{ position:sticky; top:0; z-index:20; background:var(--purple-deep); box-shadow:0 2px 10px rgba(75,47,174,0.25); }
+.gf-topbar{ position:sticky; top:0; z-index:20; background-color:var(--purple-deep); background-image:url("${WAVE_TOPBAR}"); background-repeat:repeat; background-size:140px 64px; box-shadow:0 2px 10px rgba(75,47,174,0.25); }
 .gf-wordmark{ color:#fff; }
 .gf-plate{ border-radius:9999px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .gf-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; }
