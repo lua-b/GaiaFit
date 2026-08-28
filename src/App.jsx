@@ -869,7 +869,7 @@ function AppHeader({ right }) {
     <>
       <div className="gf-topbar px-4 flex items-center justify-between" style={{ minHeight: 76, overflow: "visible", position: "relative" }}>
         <div style={{ position: "absolute", left: 16, top: 4, zIndex: 5, pointerEvents: "none" }}>
-          <CatMascot height={230} />
+          <CatMascot height={205} />
         </div>
         {/* items-center no container garante que GaiaFit e o avatar (right) fiquem na mesma altura
             e centralizados na barra, sem depender de padding calculado à mão (que quebra entre
