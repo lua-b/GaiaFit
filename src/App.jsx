@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   Plus, ChevronRight, ArrowLeft, Play, Check, X, Pencil,
   Trash2, History as HistoryIcon, Trophy, Users, Loader2, AlertTriangle, RefreshCw,
@@ -662,6 +662,80 @@ function groupExercises(exercises) {
   return blocks;
 }
 
+/* ---------------------------------- drag reorder (mouse + touch) ---------------------------------- */
+// Usa eventos nativos de touch/mouse (não Pointer Events) — é o padrão mais robusto no Safari/iOS
+// pra esse gesto, evitando inconsistências reais de captura implícita de ponteiro em telas de toque.
+// `items` precisa ter um campo `id` estável; `onCommit(novaOrdem)` só é chamado ao soltar.
+function useDragReorder(items, onCommit) {
+  const [order, setOrder] = useState(items);
+  const [dragId, setDragId] = useState(null);
+  const itemRefs = useRef({});
+  // orderRef é a fonte da verdade DURANTE o arraste, atualizada de forma síncrona dentro do
+  // próprio handler (não só como efeito colateral do render) — em eventos de toque disparados
+  // muito rápido, o estado do React pode não commitar entre um evento e o próximo, e ler
+  // `order` (via closure/effect) nesse intervalo devolve um valor desatualizado. `orderRef`
+  // nunca fica defasado porque é escrito no mesmo tick em que o novo array é calculado.
+  const orderRef = useRef(order);
+  const dragIdRef = useRef(null);
+  const onCommitRef = useRef(onCommit);
+  onCommitRef.current = onCommit;
+
+  useEffect(() => { if (!dragId) { orderRef.current = items; setOrder(items); } }, [items, dragId]);
+
+  useEffect(() => {
+    const getY = (e) => (e.touches && e.touches.length ? e.touches[0].clientY : e.clientY);
+    const onMove = (e) => {
+      if (!dragIdRef.current) return;
+      e.preventDefault();
+      const id = dragIdRef.current;
+      const y = getY(e);
+      const cur = orderRef.current;
+      const idx = cur.findIndex((it) => it.id === id);
+      if (idx === -1) return;
+      const entries = cur.map((it) => itemRefs.current[it.id]?.getBoundingClientRect()).filter(Boolean);
+      if (entries.length !== cur.length) return;
+      let targetIdx = entries.length - 1;
+      for (let i = 0; i < entries.length; i++) {
+        if (y < entries[i].top + entries[i].height / 2) { targetIdx = i; break; }
+      }
+      if (targetIdx !== idx) {
+        const next = [...cur];
+        const [moved] = next.splice(idx, 1);
+        next.splice(targetIdx, 0, moved);
+        orderRef.current = next;
+        setOrder(next);
+      }
+    };
+    const onEnd = () => {
+      if (!dragIdRef.current) return;
+      dragIdRef.current = null;
+      setDragId(null);
+      onCommitRef.current(orderRef.current);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onEnd);
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onEnd);
+    window.addEventListener("touchcancel", onEnd);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onEnd);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onEnd);
+      window.removeEventListener("touchcancel", onEnd);
+    };
+  }, []);
+
+  const dragHandleProps = (id) => ({
+    onMouseDown: (e) => { e.stopPropagation(); dragIdRef.current = id; setDragId(id); },
+    onTouchStart: (e) => { e.stopPropagation(); dragIdRef.current = id; setDragId(id); },
+    style: { touchAction: "none", cursor: "grab", padding: 8 },
+  });
+  const setItemRef = (id) => (el) => { itemRefs.current[id] = el; };
+
+  return { order, dragId, dragHandleProps, setItemRef };
+}
+
 /* ---------------------------------- workout detail ---------------------------------- */
 function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDeleteWorkout, onHistory }) {
   const [showExForm, setShowExForm] = useState(false);
@@ -734,6 +808,17 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
     onSaveWorkout({ ...workout, exercises });
   };
 
+  // Arrastar reordena BLOCOS (um exercício solto, ou um grupo inteiro de uma vez) — nunca
+  // exercícios soltos de dentro de um grupo, o que quebraria a adjacência que define o grupo.
+  const blocks = useMemo(() => groupExercises(workout.exercises).map((b) =>
+    b.type === "single" ? { id: b.ex.id, type: "single", ex: b.ex } : { id: b.items[0].supersetGroup, type: "group", label: b.label, items: b.items }
+  ), [workout.exercises]);
+  const commitBlockOrder = (newBlocks) => {
+    const exercises = newBlocks.flatMap((b) => (b.type === "single" ? [b.ex] : b.items));
+    onSaveWorkout({ ...workout, exercises });
+  };
+  const { order: blockOrder, dragId: dragBlockId, dragHandleProps: blockDragHandle, setItemRef: setBlockRef } = useDragReorder(blocks, commitBlockOrder);
+
   return (
     <div className="px-4 pb-24">
       <button className="flex items-center gap-1 py-4 text-sm" style={{ color: "var(--ink-dim)", marginLeft: 106 }} onClick={onBack}>
@@ -758,10 +843,12 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
       </div>
 
       <div className="flex flex-col gap-2">
-        {groupExercises(workout.exercises).map((block, bi) => {
+        {blockOrder.map((block) => {
           const isLastOverall = (exId) => workout.exercises.findIndex((e) => e.id === exId) === workout.exercises.length - 1;
           return block.type === "single" ? (
-            <div key={block.ex.id} className="gf-card p-3 flex items-center gap-3">
+            <div key={block.id} ref={setBlockRef(block.id)} className="gf-card p-3 flex items-center gap-3"
+              style={{ opacity: dragBlockId === block.id ? 0.6 : 1 }}>
+              <div {...blockDragHandle(block.id)} className="flex-shrink-0"><GripVertical size={16} color="var(--ink-dim)" /></div>
               <PlateIcon category={block.ex.category} />
               <div className="flex-1 min-w-0" onClick={() => { setEditEx(block.ex); setShowExForm(true); }}>
                 <div className="text-sm font-medium truncate">{block.ex.name}</div>
@@ -777,9 +864,13 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
               <button onClick={() => setDelEx(block.ex)}><Trash2 size={16} color="var(--ink-dim)" /></button>
             </div>
           ) : (
-            <div key={`group-${bi}`} className="rounded-2xl overflow-hidden" style={{ border: "1.5px solid var(--purple)" }}>
+            <div key={block.id} ref={setBlockRef(block.id)} className="rounded-2xl overflow-hidden"
+              style={{ border: "1.5px solid var(--purple)", opacity: dragBlockId === block.id ? 0.6 : 1 }}>
               <div className="px-3 py-1.5 text-xs font-semibold flex items-center justify-between gap-1.5" style={{ background: "var(--purple)", color: "#fff" }}>
-                <span className="flex items-center gap-1.5"><Link2 size={12} /> {block.label} · sem descanso entre eles</span>
+                <span className="flex items-center gap-1.5">
+                  <div {...blockDragHandle(block.id)} className="flex-shrink-0"><GripVertical size={14} color="#fff" /></div>
+                  <Link2 size={12} /> {block.label} · sem descanso entre eles
+                </span>
                 <button onClick={() => ungroupBlock(block.items)} title="Desfazer grupo"><Unlink size={14} color="#fff" /></button>
               </div>
               <div style={{ background: "var(--surface)" }}>
@@ -851,59 +942,7 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew, onReorder }) {
   const [showForm, setShowForm] = useState(false);
   const suggestionId = getTodaysSuggestion(workouts, sessions);
 
-  // Reordenar arrastando: um item por vez, via ponteiro (mouse/touch). O array local
-  // (`order`) segue o dedo em tempo real; só grava (onReorder) ao soltar. Sincroniza com
-  // `workouts` sempre que não há arraste em andamento, pra refletir edições externas.
-  const [order, setOrder] = useState(workouts);
-  const [dragId, setDragId] = useState(null);
-  const itemRefs = useRef({});
-  useEffect(() => { if (!dragId) setOrder(workouts); }, [workouts, dragId]);
-
-  // Ouve o arraste na window (em vez de pointer capture no handle) porque o dedo/mouse
-  // pode sair da área do ícone assim que o item começa a se mover.
-  const orderRef = useRef(order);
-  orderRef.current = order;
-  const dragIdRef = useRef(null);
-  useEffect(() => {
-    const onMove = (e) => {
-      const id = dragIdRef.current;
-      if (!id) return;
-      const cur = orderRef.current;
-      const idx = cur.findIndex((w) => w.id === id);
-      if (idx === -1) return;
-      const entries = cur.map((w) => itemRefs.current[w.id]?.getBoundingClientRect()).filter(Boolean);
-      if (entries.length !== cur.length) return;
-      let targetIdx = entries.length - 1;
-      for (let i = 0; i < entries.length; i++) {
-        if (e.clientY < entries[i].top + entries[i].height / 2) { targetIdx = i; break; }
-      }
-      if (targetIdx !== idx) {
-        const next = [...cur];
-        const [moved] = next.splice(idx, 1);
-        next.splice(targetIdx, 0, moved);
-        setOrder(next);
-      }
-    };
-    const onUp = () => {
-      if (!dragIdRef.current) return;
-      dragIdRef.current = null;
-      setDragId(null);
-      onReorder(orderRef.current);
-    };
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-    };
-  }, [onReorder]);
-  const handlePointerDown = (e, id) => {
-    e.stopPropagation();
-    dragIdRef.current = id;
-    setDragId(id);
-  };
+  const { order, dragId, dragHandleProps, setItemRef } = useDragReorder(workouts, onReorder);
 
   return (
     <div className="px-4 pb-2">
@@ -916,13 +955,10 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew, onReorder }) {
           const wSessions = sessions.filter((s) => s.workoutId === w.id);
           const last = wSessions.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
           return (
-            <div key={w.id} ref={(el) => (itemRefs.current[w.id] = el)}
+            <div key={w.id} ref={setItemRef(w.id)}
               className="gf-card p-4 flex items-center gap-2"
               style={{ opacity: dragId === w.id ? 0.6 : 1 }}>
-              <div
-                onPointerDown={(e) => handlePointerDown(e, w.id)}
-                className="flex-shrink-0"
-                style={{ touchAction: "none", cursor: "grab", padding: 4, marginLeft: -4 }}>
+              <div {...dragHandleProps(w.id)} className="flex-shrink-0">
                 <GripVertical size={18} color="var(--ink-dim)" />
               </div>
               <button onClick={() => onOpen(w)} className="flex-1 min-w-0 flex items-center gap-3 text-left">
