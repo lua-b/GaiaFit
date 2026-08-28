@@ -6,35 +6,37 @@ import {
 } from "lucide-react";
 
 /* ---------------------------------- tokens ---------------------------------- */
-// Ondas decorativas em SVG (data URI), usadas como textura de fundo — prateadas sobre o roxo
-// do cabeçalho, e uma versão bem sutil em roxo sobre o cinza de fundo das telas de treino.
-// Cada <path> percorre exatamente uma largura de "período" (0 a W), então o tile repete sem
-// costura visível quando background-size bate com o viewBox.
+// Pinceladas decorativas em SVG (data URI), usadas como textura de fundo — prateadas/brilhantes
+// sobre o roxo do cabeçalho, e uma versão bem sutil em roxo sobre o cinza de fundo das telas de
+// treino. Curvas assimétricas (não onda simétrica) em direções variadas, traço grosso com ponta
+// arredondada, pra parecer pincelada orgânica em vez de linha geométrica.
 const WAVE_TOPBAR = `data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='140' height='64' viewBox='0 0 140 64'>` +
-  `<path d='M0 16 Q35 4 70 16 T140 16' stroke='rgba(255,255,255,0.22)' stroke-width='2' fill='none'/>` +
-  `<path d='M0 36 Q35 24 70 36 T140 36' stroke='rgba(214,222,255,0.14)' stroke-width='2' fill='none'/>` +
-  `<path d='M0 54 Q35 44 70 54 T140 54' stroke='rgba(255,255,255,0.30)' stroke-width='1.5' fill='none'/>` +
+  `<svg xmlns='http://www.w3.org/2000/svg' width='230' height='100' viewBox='0 0 230 100'>` +
+  `<path d='M-10,15 C35,-8 70,48 120,22 C155,4 190,30 240,12' stroke='rgba(255,255,255,0.40)' stroke-width='9' stroke-linecap='round' fill='none'/>` +
+  `<path d='M-10,70 C40,95 85,42 135,78 C170,102 200,64 240,85' stroke='rgba(226,222,255,0.30)' stroke-width='7' stroke-linecap='round' fill='none'/>` +
+  `<path d='M15,88 C55,58 85,92 125,62' stroke='rgba(255,255,255,0.55)' stroke-width='4.5' stroke-linecap='round' fill='none'/>` +
+  `<path d='M-10,42 C60,80 110,-10 180,38 C200,52 215,45 240,52' stroke='rgba(255,255,255,0.16)' stroke-width='12' stroke-linecap='round' fill='none'/>` +
   `</svg>`
 )}`;
 const WAVE_BG = `data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='170' height='96' viewBox='0 0 170 96'>` +
-  `<path d='M0 22 Q42.5 6 85 22 T170 22' stroke='rgba(108,79,209,0.07)' stroke-width='2' fill='none'/>` +
-  `<path d='M0 60 Q42.5 44 85 60 T170 60' stroke='rgba(108,79,209,0.05)' stroke-width='2' fill='none'/>` +
+  `<svg xmlns='http://www.w3.org/2000/svg' width='280' height='150' viewBox='0 0 280 150'>` +
+  `<path d='M-15,30 C50,-10 100,70 160,25 C195,0 230,40 295,15' stroke='rgba(108,79,209,0.09)' stroke-width='10' stroke-linecap='round' fill='none'/>` +
+  `<path d='M-15,105 C55,140 110,65 170,115 C210,145 245,95 295,125' stroke='rgba(108,79,209,0.06)' stroke-width='8' stroke-linecap='round' fill='none'/>` +
+  `<path d='M20,130 C65,95 100,135 150,100' stroke='rgba(75,47,174,0.07)' stroke-width='5' stroke-linecap='round' fill='none'/>` +
   `</svg>`
 )}`;
 const STYLE = `
 .gf-root{
   --bg:#E6E5EA; --surface:#FFFFFF; --surface-2:#F1EFF9; --line:#E3E1EE;
   --ink:#211F2E; --ink-dim:#6E6B80; --purple:#6C4FD1; --purple-deep:#4B2FAE; --blue:#3E63D9;
-  background-color:var(--bg); background-image:url("${WAVE_BG}"); background-repeat:repeat; background-size:170px 96px;
+  background-color:var(--bg); background-image:url("${WAVE_BG}"); background-repeat:repeat; background-size:280px 150px;
   color:var(--ink); min-height:100%;
   font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
 }
 .gf-display{ font-family:'Sora',ui-sans-serif,system-ui,-apple-system,sans-serif; font-weight:700; }
 .gf-mono{ font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace; }
 .gf-shell{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
-.gf-topbar{ position:sticky; top:0; z-index:20; background-color:var(--purple-deep); background-image:url("${WAVE_TOPBAR}"); background-repeat:repeat; background-size:140px 64px; box-shadow:0 2px 10px rgba(75,47,174,0.25); }
+.gf-topbar{ position:sticky; top:0; z-index:20; background-color:var(--purple-deep); background-image:url("${WAVE_TOPBAR}"); background-repeat:repeat; background-size:230px 100px; box-shadow:0 2px 10px rgba(75,47,174,0.25); }
 .gf-wordmark{ color:#fff; }
 .gf-plate{ border-radius:9999px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .gf-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; }
