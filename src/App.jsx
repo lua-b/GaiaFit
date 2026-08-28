@@ -581,15 +581,15 @@ function HistoryView({ workout, sessions, onBack, onDeleteSession }) {
 
   return (
     <div className="px-4 pb-8">
-      <button className="flex items-center gap-1 py-4 text-sm" style={{ color: "var(--ink-dim)" }} onClick={onBack}>
+      <button className="flex items-center gap-1 py-4 text-sm" style={{ color: "var(--ink-dim)", marginLeft: 106 }} onClick={onBack}>
         <ArrowLeft size={16} /> Voltar
       </button>
-      <h2 className="gf-display text-3xl mb-1">{workout.name}</h2>
-      <p className="text-sm mb-5" style={{ color: "var(--ink-dim)" }}>
+      <h2 className="gf-display text-3xl mb-1" style={{ marginLeft: 106 }}>{workout.name}</h2>
+      <p className="text-sm mb-5" style={{ color: "var(--ink-dim)", marginLeft: 106 }}>
         Feito {wSessions.length} {wSessions.length === 1 ? "vez" : "vezes"}
       </p>
 
-      <div className="gf-card p-4 mb-5">
+      <div className="gf-card p-4 mb-5" style={{ marginTop: 20 }}>
         <label className="text-xs" style={{ color: "var(--ink-dim)" }}>Evolução de carga</label>
         <select className="gf-input w-full px-3 py-2 mt-1 mb-3" value={selExId} onChange={(e) => setSelExId(e.target.value)}>
           {workout.exercises.map((ex) => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
@@ -686,19 +686,19 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
 
   return (
     <div className="px-4 pb-24">
-      <button className="flex items-center gap-1 py-4 text-sm" style={{ color: "var(--ink-dim)" }} onClick={onBack}>
+      <button className="flex items-center gap-1 py-4 text-sm" style={{ color: "var(--ink-dim)", marginLeft: 106 }} onClick={onBack}>
         <ArrowLeft size={16} /> Voltar
       </button>
 
-      <div className="flex items-start justify-between mb-1">
-        <h2 className="gf-display text-3xl">{workout.name}</h2>
-        <button onClick={() => setEditWorkout(true)}><Pencil size={16} color="var(--ink-dim)" /></button>
+      <div className="flex items-start justify-between gap-2 mb-1" style={{ marginLeft: 106 }}>
+        <h2 className="gf-display text-2xl min-w-0">{workout.name}</h2>
+        <button className="flex-shrink-0" style={{ marginTop: 4 }} onClick={() => setEditWorkout(true)}><Pencil size={16} color="var(--ink-dim)" /></button>
       </div>
-      <p className="text-xs mb-5 gf-mono" style={{ color: "var(--ink-dim)" }}>
+      <p className="text-xs mb-5 gf-mono" style={{ color: "var(--ink-dim)", marginLeft: 106 }}>
         {count} {count === 1 ? "vez feito" : "vezes feito"}{last ? ` · última vez ${fmtDate(last.date)}` : ""}
       </p>
 
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-3 mb-6" style={{ marginTop: 20 }}>
         <button className="gf-btn-primary flex-1 py-3 flex items-center justify-center gap-2"
           disabled={workout.exercises.length === 0} onClick={onStart}>
           <Play size={16} /> Iniciar treino
