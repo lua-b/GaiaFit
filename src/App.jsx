@@ -201,19 +201,23 @@ const LUARA_SESSION_HISTORY = [
   { dayIndex: 0, dates: ["2026-08-19", "2026-08-28"] }, // Dia 1 — Superior A: 2x (contador da usuária, não do artifact antigo)
   { dayIndex: 1, dates: ["2026-08-16", "2026-08-25"] }, // Dia 2 — Inferior A: 2x, última vez 25/08/26
   { dayIndex: 2, dates: ["2026-08-17", "2026-08-26"] }, // Dia 3 — Core + Cardio: 2x, última vez 26/08/26
-  { dayIndex: 3, dates: ["2026-08-18", "2026-08-27", "2026-08-28"] }, // Dia 4 — Superior B: 3x, última vez 28/08/26
+  { dayIndex: 3, dates: ["2026-08-18", "2026-08-28"] }, // Dia 4 — Superior B: 2x, última vez 28/08/26 (hoje foi a 2ª vez)
   { dayIndex: 4, dates: ["2026-08-21"] }, // Dia 5 — Inferior B: 1x, última vez 21/08/26
   { dayIndex: 5, dates: ["2026-08-22"] }, // Dia 6 — Pump + Core: 1x, última vez 22/08/26
 ];
 const GUILHERME_SESSION_HISTORY = [
   { dayIndex: 1, dates: ["2026-08-18"] }, // Dia 2 — Força: Inferior: 1x, última vez 18/08/26
 ];
+// IDs de sessão histórica são baseados na DATA, não na posição no array — assim continuam estáveis
+// mesmo que uma data seja removida/adicionada em versões futuras do histórico (ver migração abaixo).
+// `uid()` (sessões reais, ver finishSession) nunca produz esse formato, então não há colisão.
+const HIST_ID_MARK = "-hist-";
 function buildSeedSessions(seedList, profileId, history) {
   const workouts = buildWorkouts(seedList, profileId);
   return history.flatMap(({ dayIndex, dates }) => {
     const w = workouts[dayIndex];
-    return dates.map((date, i) => ({
-      id: `${profileId}-w${dayIndex}-hist${i}`,
+    return dates.map((date) => ({
+      id: `${profileId}-w${dayIndex}${HIST_ID_MARK}${date}`,
       workoutId: w.id,
       workoutName: w.name,
       date: new Date(`${date}T12:00:00`).toISOString(),
@@ -223,19 +227,27 @@ function buildSeedSessions(seedList, profileId, history) {
 }
 
 // Sobe sempre que SEED_WORKOUTS_LUARA/GUILHERME ou *_SESSION_HISTORY mudarem de verdade. Aparelhos
-// que já tinham sido seedados (perfil já existe) recebem os treinos/títulos atualizados e as sessões
-// históricas que ainda não têm, sem nunca apagar sessões reais já registradas pela pessoa.
-const SEED_VERSION = 2;
+// que já tinham sido seedados (perfil já existe) recebem os treinos/títulos atualizados; o histórico
+// de sessões é reconciliado por completo a cada versão (sessões históricas obsoletas são removidas,
+// as que faltam são adicionadas) — mas qualquer sessão real (id sem HIST_ID_MARK, sempre gerado por
+// uid()) nunca é tocada.
+const SEED_VERSION = 3;
 function migrateDefaultProfileSeed(id, seedList, history) {
   const verKey = `gaiafit:seedVersion:${id}`;
   if ((sGet(verKey) || 0) >= SEED_VERSION) return;
 
   sSet(`gaiafit:workouts:${id}`, buildWorkouts(seedList, id));
 
+  const correctSeedSessions = buildSeedSessions(seedList, id, history);
+  const correctIds = new Set(correctSeedSessions.map((s) => s.id));
   const existing = sGet(`gaiafit:sessions:${id}`) || [];
-  const existingIds = new Set(existing.map((s) => s.id));
-  const missing = buildSeedSessions(seedList, id, history).filter((s) => !existingIds.has(s.id));
-  if (missing.length > 0) sSet(`gaiafit:sessions:${id}`, [...existing, ...missing]);
+  // "-hist" (sem o traço final) cobre também o formato antigo (hist0/hist1...) de versões
+  // anteriores da migração, além do formato atual (hist-AAAA-MM-DD) — uid() nunca gera essa
+  // substring, então sessões reais nunca são classificadas como histórico por engano.
+  const kept = existing.filter((s) => !s.id.includes("-hist") || correctIds.has(s.id));
+  const keptIds = new Set(kept.map((s) => s.id));
+  const missing = correctSeedSessions.filter((s) => !keptIds.has(s.id));
+  sSet(`gaiafit:sessions:${id}`, [...kept, ...missing]);
 
   sSet(verKey, SEED_VERSION);
 }
