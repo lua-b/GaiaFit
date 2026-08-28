@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Plus, ChevronRight, ArrowLeft, Play, Check, X, Pencil,
   Trash2, History as HistoryIcon, Trophy, Users, Loader2, AlertTriangle, RefreshCw,
-  Download, Upload, CloudOff, Link2
+  Download, Upload, CloudOff, Link2, GripVertical, Unlink
 } from "lucide-react";
 
 /* ---------------------------------- tokens ---------------------------------- */
@@ -683,6 +683,29 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
     onSaveWorkout({ ...workout, exercises: workout.exercises.filter((e) => e.id !== delEx.id) });
     setDelEx(null);
   };
+  // Bi-set = dois exercícios consecutivos com o mesmo supersetGroup (ver groupExercises).
+  // Unir só é oferecido entre dois exercícios soltos adjacentes; desfazer limpa o campo dos dois.
+  const canGroupWithNext = (ex) => {
+    const idx = workout.exercises.findIndex((e) => e.id === ex.id);
+    if (idx === -1 || idx === workout.exercises.length - 1) return false;
+    return !ex.supersetGroup && !workout.exercises[idx + 1].supersetGroup;
+  };
+  const groupWithNext = (exId) => {
+    const idx = workout.exercises.findIndex((e) => e.id === exId);
+    if (idx === -1 || idx === workout.exercises.length - 1) return;
+    const groupId = uid();
+    const exercises = workout.exercises.map((e, i) =>
+      i === idx || i === idx + 1 ? { ...e, supersetGroup: groupId, supersetLabel: "Bi-set" } : e
+    );
+    onSaveWorkout({ ...workout, exercises });
+  };
+  const ungroupBlock = (items) => {
+    const ids = new Set(items.map((it) => it.id));
+    const exercises = workout.exercises.map((e) =>
+      ids.has(e.id) ? { ...e, supersetGroup: undefined, supersetLabel: undefined } : e
+    );
+    onSaveWorkout({ ...workout, exercises });
+  };
 
   return (
     <div className="px-4 pb-24">
@@ -718,12 +741,18 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
                   {block.ex.sets}× {block.ex.repsMin} a {block.ex.repsMax}{block.ex.rir ? ` · RIR ${block.ex.rir}` : ""}{block.ex.load ? ` · ${block.ex.load}` : ""}
                 </div>
               </div>
+              {canGroupWithNext(block.ex) && (
+                <button onClick={() => groupWithNext(block.ex.id)} title="Unir com o próximo em bi-set">
+                  <Link2 size={16} color="var(--ink-dim)" />
+                </button>
+              )}
               <button onClick={() => setDelEx(block.ex)}><Trash2 size={16} color="var(--ink-dim)" /></button>
             </div>
           ) : (
             <div key={`group-${bi}`} className="rounded-2xl overflow-hidden" style={{ border: "1.5px solid var(--purple)" }}>
-              <div className="px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5" style={{ background: "var(--purple)", color: "#fff" }}>
-                <Link2 size={12} /> {block.label} · sem descanso entre eles
+              <div className="px-3 py-1.5 text-xs font-semibold flex items-center justify-between gap-1.5" style={{ background: "var(--purple)", color: "#fff" }}>
+                <span className="flex items-center gap-1.5"><Link2 size={12} /> {block.label} · sem descanso entre eles</span>
+                <button onClick={() => ungroupBlock(block.items)} title="Desfazer bi-set"><Unlink size={14} color="#fff" /></button>
               </div>
               <div style={{ background: "var(--surface)" }}>
                 {block.items.map((ex, idx) => (
@@ -781,9 +810,64 @@ function getTodaysSuggestion(workouts, sessions) {
   return workouts[(idx + 1) % workouts.length].id;
 }
 
-function Dashboard({ profile, workouts, sessions, onOpen, onNew }) {
+function Dashboard({ profile, workouts, sessions, onOpen, onNew, onReorder }) {
   const [showForm, setShowForm] = useState(false);
   const suggestionId = getTodaysSuggestion(workouts, sessions);
+
+  // Reordenar arrastando: um item por vez, via ponteiro (mouse/touch). O array local
+  // (`order`) segue o dedo em tempo real; só grava (onReorder) ao soltar. Sincroniza com
+  // `workouts` sempre que não há arraste em andamento, pra refletir edições externas.
+  const [order, setOrder] = useState(workouts);
+  const [dragId, setDragId] = useState(null);
+  const itemRefs = useRef({});
+  useEffect(() => { if (!dragId) setOrder(workouts); }, [workouts, dragId]);
+
+  // Ouve o arraste na window (em vez de pointer capture no handle) porque o dedo/mouse
+  // pode sair da área do ícone assim que o item começa a se mover.
+  const orderRef = useRef(order);
+  orderRef.current = order;
+  const dragIdRef = useRef(null);
+  useEffect(() => {
+    const onMove = (e) => {
+      const id = dragIdRef.current;
+      if (!id) return;
+      const cur = orderRef.current;
+      const idx = cur.findIndex((w) => w.id === id);
+      if (idx === -1) return;
+      const entries = cur.map((w) => itemRefs.current[w.id]?.getBoundingClientRect()).filter(Boolean);
+      if (entries.length !== cur.length) return;
+      let targetIdx = entries.length - 1;
+      for (let i = 0; i < entries.length; i++) {
+        if (e.clientY < entries[i].top + entries[i].height / 2) { targetIdx = i; break; }
+      }
+      if (targetIdx !== idx) {
+        const next = [...cur];
+        const [moved] = next.splice(idx, 1);
+        next.splice(targetIdx, 0, moved);
+        setOrder(next);
+      }
+    };
+    const onUp = () => {
+      if (!dragIdRef.current) return;
+      dragIdRef.current = null;
+      setDragId(null);
+      onReorder(orderRef.current);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [onReorder]);
+  const handlePointerDown = (e, id) => {
+    e.stopPropagation();
+    dragIdRef.current = id;
+    setDragId(id);
+  };
+
   return (
     <div className="px-4 pb-2">
       <h2 className="gf-display text-xl mb-1" style={{ marginLeft: 106, marginTop: 16, whiteSpace: "nowrap" }}>Treinos de {profile.name}</h2>
@@ -791,29 +875,39 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew }) {
       {/* A gata (decorativa, largura própria) se sobrepõe ao topo da tela — esse respiro garante
           que a lista de treinos (largura cheia) só comece depois que ela "termina" */}
       <div className="flex flex-col gap-3" style={{ marginTop: 34 }}>
-        {workouts.map((w) => {
+        {order.map((w) => {
           const wSessions = sessions.filter((s) => s.workoutId === w.id);
           const last = wSessions.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
           return (
-            <button key={w.id} onClick={() => onOpen(w)} className="gf-card p-4 text-left flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {w.exercises.slice(0, 3).map((ex) => <PlateIcon key={ex.id} category={ex.category} size={32} fontSize={9} />)}
+            <div key={w.id} ref={(el) => (itemRefs.current[w.id] = el)}
+              className="gf-card p-4 flex items-center gap-2"
+              style={{ opacity: dragId === w.id ? 0.6 : 1 }}>
+              <div
+                onPointerDown={(e) => handlePointerDown(e, w.id)}
+                className="flex-shrink-0"
+                style={{ touchAction: "none", cursor: "grab", padding: 4, marginLeft: -4 }}>
+                <GripVertical size={18} color="var(--ink-dim)" />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <div className="font-medium truncate">{w.name}</div>
-                  {w.id === suggestionId && (
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "#6C4FD11F", color: "var(--purple)" }}>
-                      Para hoje
-                    </span>
-                  )}
+              <button onClick={() => onOpen(w)} className="flex-1 min-w-0 flex items-center gap-3 text-left">
+                <div className="flex -space-x-2">
+                  {w.exercises.slice(0, 3).map((ex) => <PlateIcon key={ex.id} category={ex.category} size={32} fontSize={9} />)}
                 </div>
-                <div className="text-xs gf-mono mt-0.5" style={{ color: "var(--ink-dim)" }}>
-                  {w.exercises.length} exercícios · feito {wSessions.length}x{last ? ` · última vez ${fmtDate(last.date)}` : ""}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="font-medium truncate">{w.name}</div>
+                    {w.id === suggestionId && (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "#6C4FD11F", color: "var(--purple)" }}>
+                        Para hoje
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs gf-mono mt-0.5" style={{ color: "var(--ink-dim)" }}>
+                    {w.exercises.length} exercícios · feito {wSessions.length}x{last ? ` · última vez ${fmtDate(last.date)}` : ""}
+                  </div>
                 </div>
-              </div>
-              <ChevronRight size={18} color="var(--ink-dim)" />
-            </button>
+                <ChevronRight size={18} color="var(--ink-dim)" />
+              </button>
+            </div>
           );
         })}
         {workouts.length === 0 && <p className="text-sm text-center py-8" style={{ color: "var(--ink-dim)" }}>Nenhum treino cadastrado ainda.</p>}
@@ -1157,7 +1251,7 @@ export default function App() {
             {view === "dashboard" && (
               <Dashboard profile={currentProfile} workouts={workouts} sessions={sessions}
                 onOpen={(w) => { setActiveWorkoutId(w.id); setView("workout"); }}
-                onNew={newWorkout} />
+                onNew={newWorkout} onReorder={persistWorkouts} />
             )}
             {view === "workout" && activeWorkout && (
               <WorkoutDetail workout={activeWorkout} sessions={sessions}
