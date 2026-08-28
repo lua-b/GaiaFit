@@ -8,25 +8,26 @@ import {
 /* ---------------------------------- tokens ---------------------------------- */
 // Fitas decorativas em SVG (data URI), usadas como textura de fundo — prateadas/brilhantes sobre
 // o roxo do cabeçalho, e uma versão bem sutil em roxo sobre o cinza de fundo das telas de treino.
-// Cada fita fica na sua própria faixa horizontal (nunca se cruzam, pra não criar aquele losango
-// de sobreposição) e leva um leve desfoque (feGaussianBlur) pra parecer pincelada, não linha reta.
+// Cada fita segue uma direção/inclinação diferente (uma começa em cima e desce, outra começa
+// embaixo e sobe, uma é mais curta e assimétrica) — cruzam levemente entre si, mas o desfoque
+// (feGaussianBlur) suaviza a sobreposição em vez de criar um losango nítido.
 const WAVE_TOPBAR = `data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='120' viewBox='0 0 260 120'>` +
-  `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='1.7'/></filter>` +
+  `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='1.8'/></filter>` +
   `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
-  `<path d='M-15,16 C40,2 70,30 130,14 C170,0 200,24 275,10' stroke='rgba(255,255,255,0.32)' stroke-width='12'/>` +
-  `<path d='M-15,62 C45,76 80,48 140,64 C180,78 215,50 275,66' stroke='rgba(226,222,255,0.24)' stroke-width='14'/>` +
-  `<path d='M-15,104 C50,94 90,114 150,100 C190,90 225,110 275,98' stroke='rgba(255,255,255,0.42)' stroke-width='8'/>` +
+  `<path d='M-15,8 C25,-6 60,32 100,16 C140,0 160,54 200,42 C228,34 245,66 275,80' stroke='rgba(255,255,255,0.32)' stroke-width='12'/>` +
+  `<path d='M-15,100 C20,116 55,64 95,86 C135,108 158,44 198,58 C224,67 248,22 275,16' stroke='rgba(226,222,255,0.24)' stroke-width='14'/>` +
+  `<path d='M35,-10 C68,16 52,52 90,70 C118,83 140,58 168,96' stroke='rgba(255,255,255,0.44)' stroke-width='7'/>` +
   `</g>` +
   `</svg>`
 )}`;
 const WAVE_BG = `data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='160' viewBox='0 0 320 160'>` +
-  `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='2'/></filter>` +
+  `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='2.2'/></filter>` +
   `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
-  `<path d='M-15,24 C50,6 95,44 165,20 C205,4 240,32 335,14' stroke='rgba(108,79,209,0.10)' stroke-width='13'/>` +
-  `<path d='M-15,88 C55,104 100,72 170,92 C210,108 245,78 335,96' stroke='rgba(108,79,209,0.07)' stroke-width='15'/>` +
-  `<path d='M-15,142 C60,128 105,152 175,136 C215,126 250,148 335,132' stroke='rgba(75,47,174,0.08)' stroke-width='9'/>` +
+  `<path d='M-15,12 C35,-8 80,42 130,18 C175,-2 205,60 245,44 C270,34 290,72 335,90' stroke='rgba(108,79,209,0.10)' stroke-width='13'/>` +
+  `<path d='M-15,130 C30,148 70,82 120,108 C165,132 195,60 235,78 C262,90 288,32 335,22' stroke='rgba(108,79,209,0.07)' stroke-width='15'/>` +
+  `<path d='M45,-12 C85,20 62,66 110,88 C145,104 172,72 205,118' stroke='rgba(75,47,174,0.09)' stroke-width='8'/>` +
   `</g>` +
   `</svg>`
 )}`;
@@ -783,7 +784,7 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew }) {
   const suggestionId = getTodaysSuggestion(workouts, sessions);
   return (
     <div className="px-4 pb-24">
-      <h2 className="gf-display text-3xl mt-5 mb-1">Treinos de {profile.name}</h2>
+      <h2 className="gf-display text-3xl mt-5 mb-1" style={{ marginLeft: 80 }}>Treinos de {profile.name}</h2>
       <p className="text-xs mb-5" style={{ color: "var(--ink-dim)" }}>Seus dados ficam salvos automaticamente neste app.</p>
       <div className="flex flex-col gap-3">
         {workouts.map((w) => {
@@ -864,14 +865,14 @@ function AppHeader({ right }) {
     <>
       <div className="gf-topbar px-4 pt-3 pb-1.5 flex items-start justify-between" style={{ minHeight: 48, overflow: "visible" }}>
         <div className="flex items-start gap-1.5" style={{ position: "relative" }}>
-          <div style={{ marginBottom: -60, position: "relative", zIndex: 5 }}>
-            <CatMascot height={104} />
+          <div style={{ marginBottom: -100, position: "relative", zIndex: 5 }}>
+            <CatMascot height={170} />
           </div>
           <span className="gf-display gf-wordmark text-3xl leading-none pt-1.5" style={{ letterSpacing: "0.01em" }}>GaiaFit</span>
         </div>
         {right}
       </div>
-      <div style={{ height: 22 }} aria-hidden="true" />
+      <div style={{ height: 36 }} aria-hidden="true" />
     </>
   );
 }
