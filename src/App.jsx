@@ -6,17 +6,45 @@ import {
 } from "lucide-react";
 
 /* ---------------------------------- tokens ---------------------------------- */
+// Fitas decorativas em SVG (data URI), usadas como textura de fundo — prateadas/brilhantes sobre
+// o roxo do cabeçalho, e uma versão bem sutil em roxo sobre o cinza de fundo das telas de treino.
+// Cada fita fica na sua própria faixa horizontal e nunca se cruza com as outras. Dentro de cada
+// fita, os segmentos são encadeados com o comando "S" (curva suave do SVG, que sempre espelha o
+// controle anterior — garante continuidade suave em todo ponto, sem quebra) E a curva fecha um
+// período exato igual à largura do tile (mesma posição E mesma tangente em x=0 e x=P), então
+// também não sobra emenda visível onde um tile encontra o próximo.
+const WAVE_TOPBAR = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='130' viewBox='0 0 260 130'>` +
+  `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='1.8'/></filter>` +
+  `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
+  `<path d='M0,16 C32.5,2 97.5,2 130,16 S227.5,30 260,16' stroke='rgba(255,255,255,0.32)' stroke-width='12'/>` +
+  `<path d='M0,66 C16.25,50 48.75,50 65,66 S113.75,82 130,66 S178.75,50 195,66 S243.75,82 260,66' stroke='rgba(226,222,255,0.24)' stroke-width='10'/>` +
+  `<path d='M50,108 C70,96 90,96 110,108 S150,120 170,108' stroke='rgba(255,255,255,0.46)' stroke-width='7'/>` +
+  `</g>` +
+  `</svg>`
+)}`;
+const WAVE_BG = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='170' viewBox='0 0 320 170'>` +
+  `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='2.2'/></filter>` +
+  `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
+  `<path d='M0,26 C40,10 120,10 160,26 S280,42 320,26' stroke='rgba(108,79,209,0.10)' stroke-width='13'/>` +
+  `<path d='M0,90 C20,70 60,70 80,90 S140,110 160,90 S220,70 240,90 S300,110 320,90' stroke='rgba(108,79,209,0.07)' stroke-width='11'/>` +
+  `<path d='M60,150 C90,132 115,132 140,150 S190,168 215,150' stroke='rgba(75,47,174,0.09)' stroke-width='8'/>` +
+  `</g>` +
+  `</svg>`
+)}`;
 const STYLE = `
 .gf-root{
   --bg:#E6E5EA; --surface:#FFFFFF; --surface-2:#F1EFF9; --line:#E3E1EE;
   --ink:#211F2E; --ink-dim:#6E6B80; --purple:#6C4FD1; --purple-deep:#4B2FAE; --blue:#3E63D9;
-  background:var(--bg); color:var(--ink); min-height:100%;
+  background-color:var(--bg); background-image:url("${WAVE_BG}"); background-repeat:repeat; background-size:320px 170px;
+  color:var(--ink); min-height:100%;
   font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
 }
 .gf-display{ font-family:'Sora',ui-sans-serif,system-ui,-apple-system,sans-serif; font-weight:700; }
 .gf-mono{ font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace; }
 .gf-shell{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
-.gf-topbar{ position:sticky; top:0; z-index:20; background:var(--purple-deep); box-shadow:0 2px 10px rgba(75,47,174,0.25); }
+.gf-topbar{ position:sticky; top:0; z-index:20; background-color:var(--purple-deep); background-image:url("${WAVE_TOPBAR}"); background-repeat:repeat; background-size:260px 130px; box-shadow:0 2px 10px rgba(75,47,174,0.25); }
 .gf-wordmark{ color:#fff; }
 .gf-plate{ border-radius:9999px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .gf-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; }
@@ -757,10 +785,12 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew }) {
   const [showForm, setShowForm] = useState(false);
   const suggestionId = getTodaysSuggestion(workouts, sessions);
   return (
-    <div className="px-4 pb-24">
-      <h2 className="gf-display text-3xl mt-5 mb-1">Treinos de {profile.name}</h2>
-      <p className="text-xs mb-5" style={{ color: "var(--ink-dim)" }}>Seus dados ficam salvos automaticamente neste app.</p>
-      <div className="flex flex-col gap-3">
+    <div className="px-4 pb-2">
+      <h2 className="gf-display text-xl mb-1" style={{ marginLeft: 106, marginTop: 16, whiteSpace: "nowrap" }}>Treinos de {profile.name}</h2>
+      <p className="text-xs mb-5" style={{ color: "var(--ink-dim)", marginLeft: 106 }}>Seus dados ficam salvos automaticamente neste app.</p>
+      {/* A gata (decorativa, largura própria) se sobrepõe ao topo da tela — esse respiro garante
+          que a lista de treinos (largura cheia) só comece depois que ela "termina" */}
+      <div className="flex flex-col gap-3" style={{ marginTop: 34 }}>
         {workouts.map((w) => {
           const wSessions = sessions.filter((s) => s.workoutId === w.id);
           const last = wSessions.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
@@ -837,16 +867,17 @@ function ProfileSwitcher({ profiles, current, onSelect, onAdd, onClose }) {
 function AppHeader({ right }) {
   return (
     <>
-      <div className="gf-topbar px-4 pt-3 pb-1.5 flex items-start justify-between" style={{ minHeight: 48, overflow: "visible" }}>
-        <div className="flex items-start gap-1.5" style={{ position: "relative" }}>
-          <div style={{ marginBottom: -60, position: "relative", zIndex: 5 }}>
-            <CatMascot height={104} />
-          </div>
-          <span className="gf-display gf-wordmark text-3xl leading-none pt-1.5" style={{ letterSpacing: "0.01em" }}>GaiaFit</span>
+      <div className="gf-topbar px-4 flex items-center justify-between" style={{ minHeight: 76, overflow: "visible", position: "relative" }}>
+        <div style={{ position: "absolute", left: 16, top: 4, zIndex: 5, pointerEvents: "none" }}>
+          <CatMascot height={205} />
         </div>
+        {/* items-center no container garante que GaiaFit e o avatar (right) fiquem na mesma altura
+            e centralizados na barra, sem depender de padding calculado à mão (que quebra entre
+            fontes diferentes em cada aparelho) */}
+        <span className="gf-display gf-wordmark text-3xl leading-none" style={{ letterSpacing: "0.01em", marginLeft: 106 }}>GaiaFit</span>
         {right}
       </div>
-      <div style={{ height: 22 }} aria-hidden="true" />
+      <div style={{ height: 0 }} aria-hidden="true" />
     </>
   );
 }
