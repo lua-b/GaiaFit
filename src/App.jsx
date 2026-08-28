@@ -6,37 +6,42 @@ import {
 } from "lucide-react";
 
 /* ---------------------------------- tokens ---------------------------------- */
-// Pinceladas decorativas em SVG (data URI), usadas como textura de fundo — prateadas/brilhantes
-// sobre o roxo do cabeçalho, e uma versão bem sutil em roxo sobre o cinza de fundo das telas de
-// treino. Curvas assimétricas (não onda simétrica) em direções variadas, traço grosso com ponta
-// arredondada, pra parecer pincelada orgânica em vez de linha geométrica.
+// Fitas decorativas em SVG (data URI), usadas como textura de fundo — prateadas/brilhantes sobre
+// o roxo do cabeçalho, e uma versão bem sutil em roxo sobre o cinza de fundo das telas de treino.
+// Cada fita fica na sua própria faixa horizontal (nunca se cruzam, pra não criar aquele losango
+// de sobreposição) e leva um leve desfoque (feGaussianBlur) pra parecer pincelada, não linha reta.
 const WAVE_TOPBAR = `data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='230' height='100' viewBox='0 0 230 100'>` +
-  `<path d='M-10,15 C35,-8 70,48 120,22 C155,4 190,30 240,12' stroke='rgba(255,255,255,0.40)' stroke-width='9' stroke-linecap='round' fill='none'/>` +
-  `<path d='M-10,70 C40,95 85,42 135,78 C170,102 200,64 240,85' stroke='rgba(226,222,255,0.30)' stroke-width='7' stroke-linecap='round' fill='none'/>` +
-  `<path d='M15,88 C55,58 85,92 125,62' stroke='rgba(255,255,255,0.55)' stroke-width='4.5' stroke-linecap='round' fill='none'/>` +
-  `<path d='M-10,42 C60,80 110,-10 180,38 C200,52 215,45 240,52' stroke='rgba(255,255,255,0.16)' stroke-width='12' stroke-linecap='round' fill='none'/>` +
+  `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='120' viewBox='0 0 260 120'>` +
+  `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='1.7'/></filter>` +
+  `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
+  `<path d='M-15,16 C40,2 70,30 130,14 C170,0 200,24 275,10' stroke='rgba(255,255,255,0.32)' stroke-width='12'/>` +
+  `<path d='M-15,62 C45,76 80,48 140,64 C180,78 215,50 275,66' stroke='rgba(226,222,255,0.24)' stroke-width='14'/>` +
+  `<path d='M-15,104 C50,94 90,114 150,100 C190,90 225,110 275,98' stroke='rgba(255,255,255,0.42)' stroke-width='8'/>` +
+  `</g>` +
   `</svg>`
 )}`;
 const WAVE_BG = `data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='280' height='150' viewBox='0 0 280 150'>` +
-  `<path d='M-15,30 C50,-10 100,70 160,25 C195,0 230,40 295,15' stroke='rgba(108,79,209,0.09)' stroke-width='10' stroke-linecap='round' fill='none'/>` +
-  `<path d='M-15,105 C55,140 110,65 170,115 C210,145 245,95 295,125' stroke='rgba(108,79,209,0.06)' stroke-width='8' stroke-linecap='round' fill='none'/>` +
-  `<path d='M20,130 C65,95 100,135 150,100' stroke='rgba(75,47,174,0.07)' stroke-width='5' stroke-linecap='round' fill='none'/>` +
+  `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='160' viewBox='0 0 320 160'>` +
+  `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='2'/></filter>` +
+  `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
+  `<path d='M-15,24 C50,6 95,44 165,20 C205,4 240,32 335,14' stroke='rgba(108,79,209,0.10)' stroke-width='13'/>` +
+  `<path d='M-15,88 C55,104 100,72 170,92 C210,108 245,78 335,96' stroke='rgba(108,79,209,0.07)' stroke-width='15'/>` +
+  `<path d='M-15,142 C60,128 105,152 175,136 C215,126 250,148 335,132' stroke='rgba(75,47,174,0.08)' stroke-width='9'/>` +
+  `</g>` +
   `</svg>`
 )}`;
 const STYLE = `
 .gf-root{
   --bg:#E6E5EA; --surface:#FFFFFF; --surface-2:#F1EFF9; --line:#E3E1EE;
   --ink:#211F2E; --ink-dim:#6E6B80; --purple:#6C4FD1; --purple-deep:#4B2FAE; --blue:#3E63D9;
-  background-color:var(--bg); background-image:url("${WAVE_BG}"); background-repeat:repeat; background-size:280px 150px;
+  background-color:var(--bg); background-image:url("${WAVE_BG}"); background-repeat:repeat; background-size:320px 160px;
   color:var(--ink); min-height:100%;
   font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
 }
 .gf-display{ font-family:'Sora',ui-sans-serif,system-ui,-apple-system,sans-serif; font-weight:700; }
 .gf-mono{ font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace; }
 .gf-shell{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
-.gf-topbar{ position:sticky; top:0; z-index:20; background-color:var(--purple-deep); background-image:url("${WAVE_TOPBAR}"); background-repeat:repeat; background-size:230px 100px; box-shadow:0 2px 10px rgba(75,47,174,0.25); }
+.gf-topbar{ position:sticky; top:0; z-index:20; background-color:var(--purple-deep); background-image:url("${WAVE_TOPBAR}"); background-repeat:repeat; background-size:260px 120px; box-shadow:0 2px 10px rgba(75,47,174,0.25); }
 .gf-wordmark{ color:#fff; }
 .gf-plate{ border-radius:9999px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .gf-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; }
