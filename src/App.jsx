@@ -91,10 +91,10 @@ const SEED_WORKOUTS_LUARA = [
     { name: "Supino Inclinado 30°", category: "peito", sets: 3, repsMin: 8, repsMax: 10, rir: "1 a 2", load: "8kg", rest: "90 seg", refNote: "Ênfase em peito superior; banco dá suporte total às costas" },
     { name: "Remada Unilateral Apoiada", category: "costas", sets: 3, repsMin: 10, repsMax: 12, rir: "1 a 2", load: "10kg", rest: "90 seg", refNote: "O apoio do tronco no banco tira toda a carga da lombar" },
     { name: "Elevação Lateral", category: "ombro", sets: 3, repsMin: 12, repsMax: 15, rir: "1", load: "4kg", rest: "60 seg", refNote: "Controle a descida, sem usar embalo" },
-    { name: "Barra Fixa Assistida", category: "costas", sets: 3, repsMin: 10, repsMax: 12, rir: "1", load: "", rest: "90 seg", refNote: "Ajuste a assistência para manter a faixa de reps" },
+    { name: "Barra Fixa Assistida", category: "costas", sets: 3, repsMin: 10, repsMax: 12, rir: "1", load: "23kg", rest: "90 seg", refNote: "Ajuste a assistência para manter a faixa de reps" },
     { name: "Rosca Alternada", category: "biceps", sets: 3, repsMin: 10, repsMax: 12, rir: "1", load: "5kg", rest: "Sem pausa", refNote: "Super-série com Tríceps Corda", supersetGroup: "l-d4-5", supersetLabel: "Bi-set" },
-    { name: "Tríceps Corda", category: "triceps", sets: 3, repsMin: 12, repsMax: 15, rir: "1", load: "7,9 kg a +1", rest: "60 seg", refNote: "Fecha a super-série", supersetGroup: "l-d4-5", supersetLabel: "Bi-set" },
-    { name: "Face Pull", category: "ombro", sets: 2, repsMin: 15, repsMax: 15, rir: "1 a 2", load: "30kg", rest: "60 seg", refNote: "Saúde do ombro — relevante pelo histórico de dança/mobilidade" },
+    { name: "Tríceps Corda", category: "triceps", sets: 3, repsMin: 12, repsMax: 15, rir: "1", load: "7,9kg / 11,25kg", rest: "60 seg", refNote: "Fecha a super-série", supersetGroup: "l-d4-5", supersetLabel: "Bi-set" },
+    { name: "Face Pull", category: "ombro", sets: 2, repsMin: 15, repsMax: 15, rir: "1 a 2", load: "30kg / 21,25kg", rest: "60 seg", refNote: "Saúde do ombro — relevante pelo histórico de dança/mobilidade" },
   ]},
   { name: "Dia 5 — Inferior B (posterior/glúteo)", exercises: [
     { name: "Mesa Flexora", category: "perna", sets: 3, repsMin: 10, repsMax: 12, rir: "1 a 2", load: "23kg", rest: "90 seg", refNote: "Contração completa no topo, sem tranco" },
