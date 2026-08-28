@@ -192,6 +192,36 @@ function buildWorkouts(seedList, profileId) {
   }));
 }
 
+// Histórico de sessões da migração (28/08/2026): recria o contador "feito Nx" e "última vez"
+// que existia no artifact antigo do claude.ai, já que o site novo começa com armazenamento
+// vazio em cada aparelho. Datas/cargas são as informadas pela usuária no momento da migração
+// (a carga de cada sessão fica igual à carga de referência atual do exercício — não temos o
+// histórico exato de progressão, só o estado mais recente).
+const LUARA_SESSION_HISTORY = [
+  { dayIndex: 0, dates: ["2026-08-19", "2026-08-28"] }, // Dia 1 — Superior A: 2x (contador da usuária, não do artifact antigo)
+  { dayIndex: 1, dates: ["2026-08-16", "2026-08-25"] }, // Dia 2 — Inferior A: 2x, última vez 25/08/26
+  { dayIndex: 2, dates: ["2026-08-17", "2026-08-26"] }, // Dia 3 — Core + Cardio: 2x, última vez 26/08/26
+  { dayIndex: 3, dates: ["2026-08-18", "2026-08-27"] }, // Dia 4 — Superior B: 2x, última vez 27/08/26
+  { dayIndex: 4, dates: ["2026-08-21"] }, // Dia 5 — Inferior B: 1x, última vez 21/08/26
+  { dayIndex: 5, dates: ["2026-08-22"] }, // Dia 6 — Pump + Core: 1x, última vez 22/08/26
+];
+const GUILHERME_SESSION_HISTORY = [
+  { dayIndex: 1, dates: ["2026-08-18"] }, // Dia 2 — Força: Inferior: 1x, última vez 18/08/26
+];
+function buildSeedSessions(seedList, profileId, history) {
+  const workouts = buildWorkouts(seedList, profileId);
+  return history.flatMap(({ dayIndex, dates }) => {
+    const w = workouts[dayIndex];
+    return dates.map((date, i) => ({
+      id: `${profileId}-w${dayIndex}-hist${i}`,
+      workoutId: w.id,
+      workoutName: w.name,
+      date: new Date(`${date}T12:00:00`).toISOString(),
+      entries: w.exercises.map((ex) => ({ exerciseId: ex.id, name: ex.name, loadUsed: ex.load, repsUsed: "" })),
+    }));
+  });
+}
+
 /* ---------------------------------- small UI bits ---------------------------------- */
 function PlateIcon({ category, size = 44, fontSize = 13 }) {
   const c = catInfo(category);
@@ -885,9 +915,9 @@ export default function App() {
       profilesArr = [{ id: LUARA_ID, name: "Luara" }, { id: GUILHERME_ID, name: "Guilherme" }];
       const okP = sSet("gaiafit:profiles", profilesArr);
       const okW1 = sSet(`gaiafit:workouts:${LUARA_ID}`, buildWorkouts(SEED_WORKOUTS_LUARA, LUARA_ID));
-      const okS1 = sSet(`gaiafit:sessions:${LUARA_ID}`, []);
+      const okS1 = sSet(`gaiafit:sessions:${LUARA_ID}`, buildSeedSessions(SEED_WORKOUTS_LUARA, LUARA_ID, LUARA_SESSION_HISTORY));
       const okW2 = sSet(`gaiafit:workouts:${GUILHERME_ID}`, buildWorkouts(SEED_WORKOUTS_GUILHERME, GUILHERME_ID));
-      const okS2 = sSet(`gaiafit:sessions:${GUILHERME_ID}`, []);
+      const okS2 = sSet(`gaiafit:sessions:${GUILHERME_ID}`, buildSeedSessions(SEED_WORKOUTS_GUILHERME, GUILHERME_ID, GUILHERME_SESSION_HISTORY));
       ok = okP && okW1 && okS1 && okW2 && okS2;
     } else {
       profilesArr = p;
@@ -895,7 +925,7 @@ export default function App() {
         const gWorkouts = sGet(`gaiafit:workouts:${GUILHERME_ID}`);
         if (!gWorkouts) {
           sSet(`gaiafit:workouts:${GUILHERME_ID}`, buildWorkouts(SEED_WORKOUTS_GUILHERME, GUILHERME_ID));
-          sSet(`gaiafit:sessions:${GUILHERME_ID}`, []);
+          sSet(`gaiafit:sessions:${GUILHERME_ID}`, buildSeedSessions(SEED_WORKOUTS_GUILHERME, GUILHERME_ID, GUILHERME_SESSION_HISTORY));
         }
         profilesArr = [...profilesArr, { id: GUILHERME_ID, name: "Guilherme" }];
         sSet("gaiafit:profiles", profilesArr);
