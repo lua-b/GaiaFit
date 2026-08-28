@@ -71,7 +71,7 @@ const SEED_WORKOUTS_LUARA = [
     { name: "Rosca Direta", category: "biceps", sets: 3, repsMin: 10, repsMax: 12, rir: "1", load: "5kg", rest: "60 seg", refNote: "Cotovelos fixos ao lado do corpo", supersetGroup: "l-d1-5", supersetLabel: "Bi-set" },
     { name: "Tríceps Corda", category: "triceps", sets: 3, repsMin: 12, repsMax: 15, rir: "1", load: "7,9 kg a +1", rest: "60 seg", refNote: "Mantenha o abdômen levemente contraído durante o movimento" },
   ]},
-  { name: "Dia 2 — Inferior A (coluna protegida)", exercises: [
+  { name: "Dia 2 — Inferior A", exercises: [
     { name: "Leg Press 45°", category: "perna", sets: 4, repsMin: 8, repsMax: 12, rir: "1 a 2", load: "40kg", rest: "90 a 120 seg", refNote: "Prioridade nº1 de perna — apoio total das costas, sem compressão axial na coluna" },
     { name: "Cadeira Extensora", category: "perna", sets: 3, repsMin: 10, repsMax: 12, rir: "1 a 2", load: "41kg", rest: "90 seg", refNote: "Troca o Hack Squat, como combinado — apoio total das costas, sem compressão axial" },
     { name: "Leg Press Unilateral", category: "perna", sets: 3, repsMin: 8, repsMax: 10, rir: "2", load: "45kg", rest: "90 seg", refNote: "Por perna. Substitui a Passada no Lugar — apoio total das costas, sem exigir equilíbrio em pé" },
@@ -79,7 +79,7 @@ const SEED_WORKOUTS_LUARA = [
     { name: "Cadeira Abdutora", category: "gluteo", sets: 3, repsMin: 12, repsMax: 15, rir: "1", load: "45kg", rest: "60 seg", refNote: "Trabalha estabilidade de quadril, relevante para o padrão de dança" },
     { name: "Panturrilha na Leg Press", category: "perna", sets: 3, repsMin: 12, repsMax: 15, rir: "1", load: "77kg", rest: "60 seg", refNote: "Evita a extensão forçada da lombar que a panturrilha em pé com barra pode gerar" },
   ]},
-  { name: "Dia 3 — Core + Mobilidade + Cardio leve", exercises: [
+  { name: "Dia 3 — Core + Cardio", exercises: [
     { name: "Curl-up Modificado (McGill)", category: "abdomen", sets: 3, repsMin: 15, repsMax: 20, rir: "", load: "Peso do corpo", rest: "Sem pausa", refNote: "Cada repetição inclui hold de 8 a 10s. Evite fazer como 1º exercício antes de treino pesado de perna" },
     { name: "Prancha Lateral", category: "abdomen", sets: 3, repsMin: 40, repsMax: 50, rir: "", load: "—", rest: "Sem pausa", refNote: "Medido em segundos por lado, não repetições. Alinhamento reto da cabeça aos pés" },
     { name: "Bird Dog Movimentado", category: "lombar", sets: 3, repsMin: 12, repsMax: 15, rir: "", load: "Por lado", rest: "Sem pausa", refNote: "Por lado. Movimento lento; lombar neutra o tempo todo" },
@@ -96,7 +96,7 @@ const SEED_WORKOUTS_LUARA = [
     { name: "Tríceps Corda", category: "triceps", sets: 3, repsMin: 12, repsMax: 15, rir: "1", load: "7,9kg / 11,25kg", rest: "60 seg", refNote: "Fecha a super-série", supersetGroup: "l-d4-5", supersetLabel: "Bi-set" },
     { name: "Face Pull", category: "ombro", sets: 2, repsMin: 15, repsMax: 15, rir: "1 a 2", load: "30kg / 21,25kg", rest: "60 seg", refNote: "Saúde do ombro — relevante pelo histórico de dança/mobilidade" },
   ]},
-  { name: "Dia 5 — Inferior B (posterior/glúteo)", exercises: [
+  { name: "Dia 5 — Inferior B", exercises: [
     { name: "Mesa Flexora", category: "perna", sets: 3, repsMin: 10, repsMax: 12, rir: "1 a 2", load: "23kg", rest: "90 seg", refNote: "Contração completa no topo, sem tranco" },
     { name: "Cadeira Flexora", category: "perna", sets: 3, repsMin: 10, repsMax: 12, rir: "1 a 2", load: "+20,5kg", rest: "90 seg", refNote: "Substitui o Stiff — sem exigência de dobradiça de quadril sob carga" },
     { name: "Cadeira Adutora", category: "gluteo", sets: 3, repsMin: 12, repsMax: 15, rir: "1", load: "34,5kg", rest: "60 seg", refNote: "Estabilidade de quadril" },
