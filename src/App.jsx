@@ -786,8 +786,8 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew }) {
   const suggestionId = getTodaysSuggestion(workouts, sessions);
   return (
     <div className="px-4 pb-24">
-      <h2 className="gf-display text-3xl mt-2 mb-1" style={{ marginLeft: 80 }}>Treinos de {profile.name}</h2>
-      <p className="text-xs mb-5" style={{ color: "var(--ink-dim)", marginLeft: 80 }}>Seus dados ficam salvos automaticamente neste app.</p>
+      <h2 className="gf-display text-3xl mb-1" style={{ marginLeft: 106, marginTop: 0 }}>Treinos de {profile.name}</h2>
+      <p className="text-xs mb-5" style={{ color: "var(--ink-dim)", marginLeft: 106 }}>Seus dados ficam salvos automaticamente neste app.</p>
       <div className="flex flex-col gap-3">
         {workouts.map((w) => {
           const wSessions = sessions.filter((s) => s.workoutId === w.id);
@@ -867,14 +867,14 @@ function AppHeader({ right }) {
     <>
       <div className="gf-topbar px-4 pt-3 pb-1.5 flex items-start justify-between" style={{ minHeight: 48, overflow: "visible" }}>
         <div className="flex items-start gap-1.5" style={{ position: "relative" }}>
-          <div style={{ marginBottom: -100, position: "relative", zIndex: 5 }}>
-            <CatMascot height={170} />
+          <div style={{ marginBottom: -135, position: "relative", zIndex: 5 }}>
+            <CatMascot height={230} />
           </div>
           <span className="gf-display gf-wordmark text-3xl leading-none" style={{ letterSpacing: "0.01em", paddingTop: 16 }}>GaiaFit</span>
         </div>
-        {right}
+        <div style={{ paddingTop: 6 }}>{right}</div>
       </div>
-      <div style={{ height: 22 }} aria-hidden="true" />
+      <div style={{ height: 6 }} aria-hidden="true" />
     </>
   );
 }
