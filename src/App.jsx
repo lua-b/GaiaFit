@@ -525,9 +525,10 @@ function SessionMode({ workout, onFinish, onExit }) {
 }
 
 /* ---------------------------------- history ---------------------------------- */
-function HistoryView({ workout, sessions, onBack }) {
+function HistoryView({ workout, sessions, onBack, onDeleteSession }) {
   const wSessions = sessions.filter((s) => s.workoutId === workout.id).sort((a, b) => new Date(b.date) - new Date(a.date));
   const [selExId, setSelExId] = useState(workout.exercises[0]?.id);
+  const [delSession, setDelSession] = useState(null);
   const chartData = wSessions
     .slice().reverse()
     .map((s) => {
@@ -576,7 +577,10 @@ function HistoryView({ workout, sessions, onBack }) {
         {wSessions.length === 0 && <p className="text-sm" style={{ color: "var(--ink-dim)" }}>Nenhuma sessão registrada ainda.</p>}
         {wSessions.map((s) => (
           <div key={s.id} className="gf-card p-3">
-            <div className="gf-mono text-sm mb-1.5">{fmtDate(s.date)}</div>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="gf-mono text-sm">{fmtDate(s.date)}</div>
+              <button onClick={() => setDelSession(s)}><Trash2 size={14} color="var(--ink-dim)" /></button>
+            </div>
             <div className="flex flex-col gap-1">
               {s.entries.map((e) => (
                 <div key={e.exerciseId} className="flex justify-between text-xs gap-3">
@@ -588,6 +592,11 @@ function HistoryView({ workout, sessions, onBack }) {
           </div>
         ))}
       </div>
+
+      {delSession && (
+        <ConfirmModal title="Excluir sessão" message={`Remover o registro de ${fmtDate(delSession.date)} deste treino? Essa ação não pode ser desfeita.`}
+          onConfirm={() => { onDeleteSession(delSession.id); setDelSession(null); }} onCancel={() => setDelSession(null)} />
+      )}
     </div>
   );
 }
@@ -1020,6 +1029,7 @@ export default function App() {
     persistSessions(sessions.filter((s) => s.workoutId !== id));
     setView("dashboard"); setActiveWorkoutId(null);
   };
+  const deleteSession = (id) => persistSessions(sessions.filter((s) => s.id !== id));
 
   const finishSession = (logs, callback) => {
     const w = activeWorkout;
@@ -1114,7 +1124,7 @@ export default function App() {
                 onHistory={() => setView("history")} />
             )}
             {view === "history" && activeWorkout && (
-              <HistoryView workout={activeWorkout} sessions={sessions} onBack={() => setView("workout")} />
+              <HistoryView workout={activeWorkout} sessions={sessions} onBack={() => setView("workout")} onDeleteSession={deleteSession} />
             )}
             {view === "dashboard" && (
               <div className="px-4 pb-6 flex flex-col gap-2">
