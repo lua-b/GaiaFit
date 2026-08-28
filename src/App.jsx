@@ -683,21 +683,48 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
     onSaveWorkout({ ...workout, exercises: workout.exercises.filter((e) => e.id !== delEx.id) });
     setDelEx(null);
   };
-  // Bi-set = dois exercícios consecutivos com o mesmo supersetGroup (ver groupExercises).
-  // Unir só é oferecido entre dois exercícios soltos adjacentes; desfazer limpa o campo dos dois.
-  const canGroupWithNext = (ex) => {
-    const idx = workout.exercises.findIndex((e) => e.id === ex.id);
-    if (idx === -1 || idx === workout.exercises.length - 1) return false;
-    return !ex.supersetGroup && !workout.exercises[idx + 1].supersetGroup;
+  // Grupos (bi-set, tri-set, circuito...) = exercícios consecutivos com o mesmo supersetGroup
+  // (ver groupExercises). O rótulo é derivado do tamanho final do grupo, nunca escolhido à mão,
+  // pra ficar sempre coerente depois de unir/remover membros.
+  const labelForSize = (n) => (n <= 2 ? "Bi-set" : "Circuito");
+  const relabelGroups = (exercises) => {
+    const counts = {};
+    exercises.forEach((e) => { if (e.supersetGroup) counts[e.supersetGroup] = (counts[e.supersetGroup] || 0) + 1; });
+    return exercises.map((e) => (e.supersetGroup ? { ...e, supersetLabel: labelForSize(counts[e.supersetGroup]) } : e));
   };
-  const groupWithNext = (exId) => {
+  // Une o exercício (ou, se ele já for parte de um grupo, o grupo inteiro) com o bloco seguinte —
+  // funciona pra criar um grupo novo, ou pra estender um grupo já existente por qualquer lado.
+  const mergeWithNext = (exId) => {
     const idx = workout.exercises.findIndex((e) => e.id === exId);
     if (idx === -1 || idx === workout.exercises.length - 1) return;
-    const groupId = uid();
-    const exercises = workout.exercises.map((e, i) =>
-      i === idx || i === idx + 1 ? { ...e, supersetGroup: groupId, supersetLabel: "Bi-set" } : e
+    const cur = workout.exercises[idx];
+    const next = workout.exercises[idx + 1];
+    const groupId = cur.supersetGroup || next.supersetGroup || uid();
+    const exercises = workout.exercises.map((e) => {
+      const inCurGroup = cur.supersetGroup && e.supersetGroup === cur.supersetGroup;
+      const inNextGroup = next.supersetGroup && e.supersetGroup === next.supersetGroup;
+      if (inCurGroup || inNextGroup || e.id === cur.id || e.id === next.id) {
+        return { ...e, supersetGroup: groupId };
+      }
+      return e;
+    });
+    onSaveWorkout({ ...workout, exercises: relabelGroups(exercises) });
+  };
+  // Tira só esse exercício do grupo (o resto continua junto); se sobrar 1 só, dissolve também,
+  // já que um "grupo" de 1 não existe.
+  const removeFromGroup = (exId) => {
+    const groupId = workout.exercises.find((e) => e.id === exId)?.supersetGroup;
+    if (!groupId) return;
+    let exercises = workout.exercises.map((e) =>
+      e.id === exId ? { ...e, supersetGroup: undefined, supersetLabel: undefined } : e
     );
-    onSaveWorkout({ ...workout, exercises });
+    const remaining = exercises.filter((e) => e.supersetGroup === groupId);
+    if (remaining.length === 1) {
+      exercises = exercises.map((e) =>
+        e.supersetGroup === groupId ? { ...e, supersetGroup: undefined, supersetLabel: undefined } : e
+      );
+    }
+    onSaveWorkout({ ...workout, exercises: relabelGroups(exercises) });
   };
   const ungroupBlock = (items) => {
     const ids = new Set(items.map((it) => it.id));
@@ -731,8 +758,9 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
       </div>
 
       <div className="flex flex-col gap-2">
-        {groupExercises(workout.exercises).map((block, bi) =>
-          block.type === "single" ? (
+        {groupExercises(workout.exercises).map((block, bi) => {
+          const isLastOverall = (exId) => workout.exercises.findIndex((e) => e.id === exId) === workout.exercises.length - 1;
+          return block.type === "single" ? (
             <div key={block.ex.id} className="gf-card p-3 flex items-center gap-3">
               <PlateIcon category={block.ex.category} />
               <div className="flex-1 min-w-0" onClick={() => { setEditEx(block.ex); setShowExForm(true); }}>
@@ -741,8 +769,8 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
                   {block.ex.sets}× {block.ex.repsMin} a {block.ex.repsMax}{block.ex.rir ? ` · RIR ${block.ex.rir}` : ""}{block.ex.load ? ` · ${block.ex.load}` : ""}
                 </div>
               </div>
-              {canGroupWithNext(block.ex) && (
-                <button onClick={() => groupWithNext(block.ex.id)} title="Unir com o próximo em bi-set">
+              {!isLastOverall(block.ex.id) && (
+                <button onClick={() => mergeWithNext(block.ex.id)} title="Unir com o próximo exercício">
                   <Link2 size={16} color="var(--ink-dim)" />
                 </button>
               )}
@@ -752,26 +780,35 @@ function WorkoutDetail({ workout, sessions, onBack, onStart, onSaveWorkout, onDe
             <div key={`group-${bi}`} className="rounded-2xl overflow-hidden" style={{ border: "1.5px solid var(--purple)" }}>
               <div className="px-3 py-1.5 text-xs font-semibold flex items-center justify-between gap-1.5" style={{ background: "var(--purple)", color: "#fff" }}>
                 <span className="flex items-center gap-1.5"><Link2 size={12} /> {block.label} · sem descanso entre eles</span>
-                <button onClick={() => ungroupBlock(block.items)} title="Desfazer bi-set"><Unlink size={14} color="#fff" /></button>
+                <button onClick={() => ungroupBlock(block.items)} title="Desfazer grupo"><Unlink size={14} color="#fff" /></button>
               </div>
               <div style={{ background: "var(--surface)" }}>
-                {block.items.map((ex, idx) => (
-                  <div key={ex.id} className="p-3 flex items-center gap-3"
-                    style={{ borderBottom: idx < block.items.length - 1 ? "1px solid var(--line)" : "none" }}>
-                    <PlateIcon category={ex.category} />
-                    <div className="flex-1 min-w-0" onClick={() => { setEditEx(ex); setShowExForm(true); }}>
-                      <div className="text-sm font-medium truncate">{ex.name}</div>
-                      <div className="text-xs gf-mono mt-0.5 truncate" style={{ color: "var(--ink-dim)" }}>
-                        {ex.sets}× {ex.repsMin} a {ex.repsMax}{ex.rir ? ` · RIR ${ex.rir}` : ""}{ex.load ? ` · ${ex.load}` : ""}
+                {block.items.map((ex, idx) => {
+                  const isLastInGroup = idx === block.items.length - 1;
+                  return (
+                    <div key={ex.id} className="p-3 flex items-center gap-3"
+                      style={{ borderBottom: idx < block.items.length - 1 ? "1px solid var(--line)" : "none" }}>
+                      <PlateIcon category={ex.category} />
+                      <div className="flex-1 min-w-0" onClick={() => { setEditEx(ex); setShowExForm(true); }}>
+                        <div className="text-sm font-medium truncate">{ex.name}</div>
+                        <div className="text-xs gf-mono mt-0.5 truncate" style={{ color: "var(--ink-dim)" }}>
+                          {ex.sets}× {ex.repsMin} a {ex.repsMax}{ex.rir ? ` · RIR ${ex.rir}` : ""}{ex.load ? ` · ${ex.load}` : ""}
+                        </div>
                       </div>
+                      <button onClick={() => removeFromGroup(ex.id)} title="Tirar do grupo"><Unlink size={16} color="var(--ink-dim)" /></button>
+                      {isLastInGroup && !isLastOverall(ex.id) && (
+                        <button onClick={() => mergeWithNext(ex.id)} title="Unir com o próximo exercício">
+                          <Link2 size={16} color="var(--ink-dim)" />
+                        </button>
+                      )}
+                      <button onClick={() => setDelEx(ex)}><Trash2 size={16} color="var(--ink-dim)" /></button>
                     </div>
-                    <button onClick={() => setDelEx(ex)}><Trash2 size={16} color="var(--ink-dim)" /></button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
-          )
-        )}
+          );
+        })}
         {workout.exercises.length === 0 && (
           <p className="text-sm text-center py-6" style={{ color: "var(--ink-dim)" }}>Nenhum exercício ainda. Adicione o primeiro abaixo.</p>
         )}
