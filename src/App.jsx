@@ -790,7 +790,7 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew }) {
       <p className="text-xs mb-5" style={{ color: "var(--ink-dim)", marginLeft: 106 }}>Seus dados ficam salvos automaticamente neste app.</p>
       {/* A gata (decorativa, largura própria) se sobrepõe ao topo da tela — esse respiro garante
           que a lista de treinos (largura cheia) só comece depois que ela "termina" */}
-      <div className="flex flex-col gap-3" style={{ marginTop: 82 }}>
+      <div className="flex flex-col gap-3" style={{ marginTop: 68 }}>
         {workouts.map((w) => {
           const wSessions = sessions.filter((s) => s.workoutId === w.id);
           const last = wSessions.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
