@@ -503,7 +503,7 @@ function SessionMode({ workout, onFinish, onExit }) {
           <X size={18} color="#fff" />
         </button>
       } />
-      <div className="flex items-center justify-center mb-2">
+      <div className="flex items-center mb-2" style={{ marginTop: 16, marginLeft: 122 }}>
         <span className="gf-mono text-xs" style={{ color: "var(--ink-dim)" }}>
           EXERCÍCIO {idx + 1} DE {workout.exercises.length}
         </span>
