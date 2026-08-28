@@ -8,17 +8,18 @@ import {
 /* ---------------------------------- tokens ---------------------------------- */
 // Fitas decorativas em SVG (data URI), usadas como textura de fundo — prateadas/brilhantes sobre
 // o roxo do cabeçalho, e uma versão bem sutil em roxo sobre o cinza de fundo das telas de treino.
-// Cada fita fica na sua própria faixa horizontal e NUNCA se cruza com as outras (cruzar cria uma
-// quebra/X visível, mesmo com desfoque) — a variedade vem de cada faixa ter um "jeito" diferente:
-// onda larga e lenta, onda mais curta e frequente, ou um traço curto que não atravessa toda a
-// largura. Leve desfoque (feGaussianBlur) pra parecer pincelada, não linha geométrica.
+// Cada fita fica na sua própria faixa horizontal e nunca se cruza com as outras. Dentro de cada
+// fita, os segmentos são encadeados com o comando "S" (curva suave do SVG, que sempre espelha o
+// controle anterior — garante continuidade suave em todo ponto, sem quebra) E a curva fecha um
+// período exato igual à largura do tile (mesma posição E mesma tangente em x=0 e x=P), então
+// também não sobra emenda visível onde um tile encontra o próximo.
 const WAVE_TOPBAR = `data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='130' viewBox='0 0 260 130'>` +
   `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='1.8'/></filter>` +
   `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
-  `<path d='M-15,16 C25,2 55,32 95,16 C140,-2 170,34 205,18 C232,6 250,28 275,14' stroke='rgba(255,255,255,0.32)' stroke-width='12'/>` +
-  `<path d='M-15,60 C10,44 30,80 50,64 C70,48 90,82 110,66 C130,50 150,82 170,66 C190,50 210,80 230,64 C250,48 265,66 275,60' stroke='rgba(226,222,255,0.24)' stroke-width='10'/>` +
-  `<path d='M50,112 C80,96 105,120 140,104 C165,92 185,112 210,100' stroke='rgba(255,255,255,0.46)' stroke-width='7'/>` +
+  `<path d='M0,16 C32.5,2 97.5,2 130,16 S227.5,30 260,16' stroke='rgba(255,255,255,0.32)' stroke-width='12'/>` +
+  `<path d='M0,66 C16.25,50 48.75,50 65,66 S113.75,82 130,66 S178.75,50 195,66 S243.75,82 260,66' stroke='rgba(226,222,255,0.24)' stroke-width='10'/>` +
+  `<path d='M50,108 C70,96 90,96 110,108 S150,120 170,108' stroke='rgba(255,255,255,0.46)' stroke-width='7'/>` +
   `</g>` +
   `</svg>`
 )}`;
@@ -26,9 +27,9 @@ const WAVE_BG = `data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='170' viewBox='0 0 320 170'>` +
   `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='2.2'/></filter>` +
   `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
-  `<path d='M-15,26 C40,8 90,48 150,22 C195,4 225,44 255,28 C280,18 300,36 335,24' stroke='rgba(108,79,209,0.10)' stroke-width='13'/>` +
-  `<path d='M-15,84 C15,64 45,108 75,88 C105,68 130,110 160,90 C190,70 215,108 245,88 C270,72 295,92 335,84' stroke='rgba(108,79,209,0.07)' stroke-width='11'/>` +
-  `<path d='M60,146 C95,128 125,158 165,138 C195,124 220,150 255,134' stroke='rgba(75,47,174,0.09)' stroke-width='8'/>` +
+  `<path d='M0,26 C40,10 120,10 160,26 S280,42 320,26' stroke='rgba(108,79,209,0.10)' stroke-width='13'/>` +
+  `<path d='M0,90 C20,70 60,70 80,90 S140,110 160,90 S220,70 240,90 S300,110 320,90' stroke='rgba(108,79,209,0.07)' stroke-width='11'/>` +
+  `<path d='M60,150 C90,132 115,132 140,150 S190,168 215,150' stroke='rgba(75,47,174,0.09)' stroke-width='8'/>` +
   `</g>` +
   `</svg>`
 )}`;
