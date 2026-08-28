@@ -785,10 +785,12 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew }) {
   const [showForm, setShowForm] = useState(false);
   const suggestionId = getTodaysSuggestion(workouts, sessions);
   return (
-    <div className="px-4 pb-24">
+    <div className="px-4 pb-2">
       <h2 className="gf-display text-xl mb-1" style={{ marginLeft: 106, marginTop: 0, whiteSpace: "nowrap" }}>Treinos de {profile.name}</h2>
       <p className="text-xs mb-5" style={{ color: "var(--ink-dim)", marginLeft: 106 }}>Seus dados ficam salvos automaticamente neste app.</p>
-      <div className="flex flex-col gap-3">
+      {/* A gata (decorativa, largura própria) se sobrepõe ao topo da tela — esse respiro garante
+          que a lista de treinos (largura cheia) só comece depois que ela "termina" */}
+      <div className="flex flex-col gap-3" style={{ marginTop: 82 }}>
         {workouts.map((w) => {
           const wSessions = sessions.filter((s) => s.workoutId === w.id);
           const last = wSessions.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
@@ -865,14 +867,15 @@ function ProfileSwitcher({ profiles, current, onSelect, onAdd, onClose }) {
 function AppHeader({ right }) {
   return (
     <>
-      <div className="gf-topbar px-4 pt-3 pb-1.5 flex items-start justify-between" style={{ minHeight: 48, overflow: "visible" }}>
-        <div className="flex items-start gap-1.5" style={{ position: "relative" }}>
-          <div style={{ marginBottom: -135, position: "relative", zIndex: 5, pointerEvents: "none" }}>
-            <CatMascot height={230} />
-          </div>
-          <span className="gf-display gf-wordmark text-3xl leading-none" style={{ letterSpacing: "0.01em", paddingTop: 59 }}>GaiaFit</span>
+      <div className="gf-topbar px-4 flex items-center justify-between" style={{ minHeight: 76, overflow: "visible", position: "relative" }}>
+        <div style={{ position: "absolute", left: 16, top: 4, zIndex: 5, pointerEvents: "none" }}>
+          <CatMascot height={230} />
         </div>
-        <div style={{ paddingTop: 28 }}>{right}</div>
+        {/* items-center no container garante que GaiaFit e o avatar (right) fiquem na mesma altura
+            e centralizados na barra, sem depender de padding calculado à mão (que quebra entre
+            fontes diferentes em cada aparelho) */}
+        <span className="gf-display gf-wordmark text-3xl leading-none" style={{ letterSpacing: "0.01em", marginLeft: 106 }}>GaiaFit</span>
+        {right}
       </div>
       <div style={{ height: 0 }} aria-hidden="true" />
     </>
