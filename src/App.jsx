@@ -201,7 +201,7 @@ const LUARA_SESSION_HISTORY = [
   { dayIndex: 0, dates: ["2026-08-19", "2026-08-23"] }, // Dia 1 — Superior A: 2x (contador da usuária; data da 2ª vez é aproximada)
   { dayIndex: 1, dates: ["2026-08-16", "2026-08-25"] }, // Dia 2 — Inferior A: 2x, última vez 25/08/26
   { dayIndex: 2, dates: ["2026-08-17", "2026-08-26"] }, // Dia 3 — Core + Cardio: 2x, última vez 26/08/26
-  { dayIndex: 3, dates: ["2026-08-18", "2026-08-28"] }, // Dia 4 — Superior B: 2x, última vez 28/08/26 (hoje foi a 2ª vez)
+  { dayIndex: 3, dates: ["2026-08-18", "2026-08-27"] }, // Dia 4 — Superior B: 2x, última vez 27/08/26 (feito ontem, não hoje)
   { dayIndex: 4, dates: ["2026-08-21"] }, // Dia 5 — Inferior B: 1x, última vez 21/08/26
   { dayIndex: 5, dates: ["2026-08-22"] }, // Dia 6 — Pump + Core: 1x, última vez 22/08/26
 ];
@@ -231,7 +231,7 @@ function buildSeedSessions(seedList, profileId, history) {
 // de sessões é reconciliado por completo a cada versão (sessões históricas obsoletas são removidas,
 // as que faltam são adicionadas) — mas qualquer sessão real (id sem HIST_ID_MARK, sempre gerado por
 // uid()) nunca é tocada.
-const SEED_VERSION = 4;
+const SEED_VERSION = 5;
 function migrateDefaultProfileSeed(id, seedList, history) {
   const verKey = `gaiafit:seedVersion:${id}`;
   if ((sGet(verKey) || 0) >= SEED_VERSION) return;
