@@ -786,7 +786,7 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew }) {
   const suggestionId = getTodaysSuggestion(workouts, sessions);
   return (
     <div className="px-4 pb-24">
-      <h2 className="gf-display text-3xl mb-1" style={{ marginLeft: 106, marginTop: 0 }}>Treinos de {profile.name}</h2>
+      <h2 className="gf-display text-xl mb-1" style={{ marginLeft: 106, marginTop: 0, whiteSpace: "nowrap" }}>Treinos de {profile.name}</h2>
       <p className="text-xs mb-5" style={{ color: "var(--ink-dim)", marginLeft: 106 }}>Seus dados ficam salvos automaticamente neste app.</p>
       <div className="flex flex-col gap-3">
         {workouts.map((w) => {
@@ -870,11 +870,11 @@ function AppHeader({ right }) {
           <div style={{ marginBottom: -135, position: "relative", zIndex: 5 }}>
             <CatMascot height={230} />
           </div>
-          <span className="gf-display gf-wordmark text-3xl leading-none" style={{ letterSpacing: "0.01em", paddingTop: 16 }}>GaiaFit</span>
+          <span className="gf-display gf-wordmark text-3xl leading-none" style={{ letterSpacing: "0.01em", paddingTop: 59 }}>GaiaFit</span>
         </div>
-        <div style={{ paddingTop: 6 }}>{right}</div>
+        <div style={{ paddingTop: 28 }}>{right}</div>
       </div>
-      <div style={{ height: 6 }} aria-hidden="true" />
+      <div style={{ height: 0 }} aria-hidden="true" />
     </>
   );
 }
