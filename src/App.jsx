@@ -8,26 +8,27 @@ import {
 /* ---------------------------------- tokens ---------------------------------- */
 // Fitas decorativas em SVG (data URI), usadas como textura de fundo — prateadas/brilhantes sobre
 // o roxo do cabeçalho, e uma versão bem sutil em roxo sobre o cinza de fundo das telas de treino.
-// Cada fita segue uma direção/inclinação diferente (uma começa em cima e desce, outra começa
-// embaixo e sobe, uma é mais curta e assimétrica) — cruzam levemente entre si, mas o desfoque
-// (feGaussianBlur) suaviza a sobreposição em vez de criar um losango nítido.
+// Cada fita fica na sua própria faixa horizontal e NUNCA se cruza com as outras (cruzar cria uma
+// quebra/X visível, mesmo com desfoque) — a variedade vem de cada faixa ter um "jeito" diferente:
+// onda larga e lenta, onda mais curta e frequente, ou um traço curto que não atravessa toda a
+// largura. Leve desfoque (feGaussianBlur) pra parecer pincelada, não linha geométrica.
 const WAVE_TOPBAR = `data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='120' viewBox='0 0 260 120'>` +
+  `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='130' viewBox='0 0 260 130'>` +
   `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='1.8'/></filter>` +
   `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
-  `<path d='M-15,8 C25,-6 60,32 100,16 C140,0 160,54 200,42 C228,34 245,66 275,80' stroke='rgba(255,255,255,0.32)' stroke-width='12'/>` +
-  `<path d='M-15,100 C20,116 55,64 95,86 C135,108 158,44 198,58 C224,67 248,22 275,16' stroke='rgba(226,222,255,0.24)' stroke-width='14'/>` +
-  `<path d='M35,-10 C68,16 52,52 90,70 C118,83 140,58 168,96' stroke='rgba(255,255,255,0.44)' stroke-width='7'/>` +
+  `<path d='M-15,16 C25,2 55,32 95,16 C140,-2 170,34 205,18 C232,6 250,28 275,14' stroke='rgba(255,255,255,0.32)' stroke-width='12'/>` +
+  `<path d='M-15,60 C10,44 30,80 50,64 C70,48 90,82 110,66 C130,50 150,82 170,66 C190,50 210,80 230,64 C250,48 265,66 275,60' stroke='rgba(226,222,255,0.24)' stroke-width='10'/>` +
+  `<path d='M50,112 C80,96 105,120 140,104 C165,92 185,112 210,100' stroke='rgba(255,255,255,0.46)' stroke-width='7'/>` +
   `</g>` +
   `</svg>`
 )}`;
 const WAVE_BG = `data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='160' viewBox='0 0 320 160'>` +
+  `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='170' viewBox='0 0 320 170'>` +
   `<filter id='sb' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='2.2'/></filter>` +
   `<g filter='url(#sb)' fill='none' stroke-linecap='round'>` +
-  `<path d='M-15,12 C35,-8 80,42 130,18 C175,-2 205,60 245,44 C270,34 290,72 335,90' stroke='rgba(108,79,209,0.10)' stroke-width='13'/>` +
-  `<path d='M-15,130 C30,148 70,82 120,108 C165,132 195,60 235,78 C262,90 288,32 335,22' stroke='rgba(108,79,209,0.07)' stroke-width='15'/>` +
-  `<path d='M45,-12 C85,20 62,66 110,88 C145,104 172,72 205,118' stroke='rgba(75,47,174,0.09)' stroke-width='8'/>` +
+  `<path d='M-15,26 C40,8 90,48 150,22 C195,4 225,44 255,28 C280,18 300,36 335,24' stroke='rgba(108,79,209,0.10)' stroke-width='13'/>` +
+  `<path d='M-15,84 C15,64 45,108 75,88 C105,68 130,110 160,90 C190,70 215,108 245,88 C270,72 295,92 335,84' stroke='rgba(108,79,209,0.07)' stroke-width='11'/>` +
+  `<path d='M60,146 C95,128 125,158 165,138 C195,124 220,150 255,134' stroke='rgba(75,47,174,0.09)' stroke-width='8'/>` +
   `</g>` +
   `</svg>`
 )}`;
@@ -35,14 +36,14 @@ const STYLE = `
 .gf-root{
   --bg:#E6E5EA; --surface:#FFFFFF; --surface-2:#F1EFF9; --line:#E3E1EE;
   --ink:#211F2E; --ink-dim:#6E6B80; --purple:#6C4FD1; --purple-deep:#4B2FAE; --blue:#3E63D9;
-  background-color:var(--bg); background-image:url("${WAVE_BG}"); background-repeat:repeat; background-size:320px 160px;
+  background-color:var(--bg); background-image:url("${WAVE_BG}"); background-repeat:repeat; background-size:320px 170px;
   color:var(--ink); min-height:100%;
   font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
 }
 .gf-display{ font-family:'Sora',ui-sans-serif,system-ui,-apple-system,sans-serif; font-weight:700; }
 .gf-mono{ font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace; }
 .gf-shell{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
-.gf-topbar{ position:sticky; top:0; z-index:20; background-color:var(--purple-deep); background-image:url("${WAVE_TOPBAR}"); background-repeat:repeat; background-size:260px 120px; box-shadow:0 2px 10px rgba(75,47,174,0.25); }
+.gf-topbar{ position:sticky; top:0; z-index:20; background-color:var(--purple-deep); background-image:url("${WAVE_TOPBAR}"); background-repeat:repeat; background-size:260px 130px; box-shadow:0 2px 10px rgba(75,47,174,0.25); }
 .gf-wordmark{ color:#fff; }
 .gf-plate{ border-radius:9999px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .gf-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; }
@@ -784,8 +785,8 @@ function Dashboard({ profile, workouts, sessions, onOpen, onNew }) {
   const suggestionId = getTodaysSuggestion(workouts, sessions);
   return (
     <div className="px-4 pb-24">
-      <h2 className="gf-display text-3xl mt-5 mb-1" style={{ marginLeft: 80 }}>Treinos de {profile.name}</h2>
-      <p className="text-xs mb-5" style={{ color: "var(--ink-dim)" }}>Seus dados ficam salvos automaticamente neste app.</p>
+      <h2 className="gf-display text-3xl mt-2 mb-1" style={{ marginLeft: 80 }}>Treinos de {profile.name}</h2>
+      <p className="text-xs mb-5" style={{ color: "var(--ink-dim)", marginLeft: 80 }}>Seus dados ficam salvos automaticamente neste app.</p>
       <div className="flex flex-col gap-3">
         {workouts.map((w) => {
           const wSessions = sessions.filter((s) => s.workoutId === w.id);
@@ -868,11 +869,11 @@ function AppHeader({ right }) {
           <div style={{ marginBottom: -100, position: "relative", zIndex: 5 }}>
             <CatMascot height={170} />
           </div>
-          <span className="gf-display gf-wordmark text-3xl leading-none pt-1.5" style={{ letterSpacing: "0.01em" }}>GaiaFit</span>
+          <span className="gf-display gf-wordmark text-3xl leading-none" style={{ letterSpacing: "0.01em", paddingTop: 16 }}>GaiaFit</span>
         </div>
         {right}
       </div>
-      <div style={{ height: 36 }} aria-hidden="true" />
+      <div style={{ height: 22 }} aria-hidden="true" />
     </>
   );
 }
