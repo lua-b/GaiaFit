@@ -198,7 +198,7 @@ function buildWorkouts(seedList, profileId) {
 // (a carga de cada sessão fica igual à carga de referência atual do exercício — não temos o
 // histórico exato de progressão, só o estado mais recente).
 const LUARA_SESSION_HISTORY = [
-  { dayIndex: 0, dates: ["2026-08-19", "2026-08-28"] }, // Dia 1 — Superior A: 2x (contador da usuária, não do artifact antigo)
+  { dayIndex: 0, dates: ["2026-08-19", "2026-08-23"] }, // Dia 1 — Superior A: 2x (contador da usuária; data da 2ª vez é aproximada)
   { dayIndex: 1, dates: ["2026-08-16", "2026-08-25"] }, // Dia 2 — Inferior A: 2x, última vez 25/08/26
   { dayIndex: 2, dates: ["2026-08-17", "2026-08-26"] }, // Dia 3 — Core + Cardio: 2x, última vez 26/08/26
   { dayIndex: 3, dates: ["2026-08-18", "2026-08-28"] }, // Dia 4 — Superior B: 2x, última vez 28/08/26 (hoje foi a 2ª vez)
@@ -231,7 +231,7 @@ function buildSeedSessions(seedList, profileId, history) {
 // de sessões é reconciliado por completo a cada versão (sessões históricas obsoletas são removidas,
 // as que faltam são adicionadas) — mas qualquer sessão real (id sem HIST_ID_MARK, sempre gerado por
 // uid()) nunca é tocada.
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 function migrateDefaultProfileSeed(id, seedList, history) {
   const verKey = `gaiafit:seedVersion:${id}`;
   if ((sGet(verKey) || 0) >= SEED_VERSION) return;
@@ -746,9 +746,10 @@ function getTodaysSuggestion(workouts, sessions) {
   const sorted = [...sessions].sort((a, b) => new Date(b.date) - new Date(a.date));
   const last = sorted[0];
   if (!last) return workouts[0].id; // nunca treinou ainda: sugere o primeiro
-  if (new Date(last.date).toDateString() === new Date().toDateString()) return null; // já treinou hoje
   const idx = workouts.findIndex((w) => w.id === last.workoutId);
   if (idx === -1) return workouts[0].id;
+  // já treinou hoje: mantém o destaque no treino de hoje, em vez de já pular pro próximo
+  if (new Date(last.date).toDateString() === new Date().toDateString()) return last.workoutId;
   return workouts[(idx + 1) % workouts.length].id;
 }
 
